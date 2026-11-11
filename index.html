@@ -882,10 +882,10 @@
     // ============================================================
     function createHostPeer(roomCode) {
       return new Promise((resolve, reject) => {
-        // Используем надежный публичный сервер вместо заблокированного 0.peerjs.com
+        // Используем альтернативный сервер, который реже блокируется
         const peer = new Peer(roomCode, {
-          debug: 1,
-          host: 'peerjs.92k.de',
+          debug: 2,
+          host: 'signal.pooled.run',
           port: 443,
           secure: true,
           config: {
@@ -893,12 +893,12 @@
               { urls: 'stun:stun.l.google.com:19302' },
               { urls: 'stun:stun1.l.google.com:19302' },
               { urls: 'stun:stun2.l.google.com:19302' },
-              { 
+              {
                 urls: 'turn:openrelay.metered.ca:80',
                 username: 'openrelayproject',
                 credential: 'openrelayproject'
               },
-              { 
+              {
                 urls: 'turn:openrelay.metered.ca:443',
                 username: 'openrelayproject',
                 credential: 'openrelayproject'
@@ -912,8 +912,15 @@
           reject(new Error('Таймаут подключения к сигнальному серверу'));
         }, 15000);
 
-        peer.on('open', (id) => { clearTimeout(timeout); resolve(peer); });
-        peer.on('error', (err) => { clearTimeout(timeout); reject(err); });
+        peer.on('open', (id) => {
+          clearTimeout(timeout);
+          resolve(peer);
+        });
+
+        peer.on('error', (err) => {
+          clearTimeout(timeout);
+          reject(err);
+        });
       });
     }
 
