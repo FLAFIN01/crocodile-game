@@ -94,7 +94,7 @@
       padding: 12px 20px;
       font-weight: 600;
       font-size: 0.95rem;
-      transition: transform 0.15s var(--ease-out-expo), box-shadow 0.15s var(--ease-out-expo), background 0.2s ease;
+      transition: transform 0.15s var(--ease-out-expo), box-shadow 0.15s var(--ease-out-expo);
       box-shadow: var(--shadow-hard);
       user-select: none;
       touch-action: manipulation;
@@ -110,11 +110,7 @@
       box-shadow: 2px 2px 0 var(--ink);
     }
 
-    button:disabled {
-      opacity: 0.45;
-      pointer-events: none;
-    }
-
+    button:disabled { opacity: 0.45; pointer-events: none; }
     button.primary { background: var(--accent-blue); color: #fff; }
     button.coral { background: var(--accent-coral); color: #fff; }
     button.ghost { background: transparent; box-shadow: none; border-color: var(--ink-muted); }
@@ -130,9 +126,8 @@
       outline: none;
       min-height: 48px;
       width: 100%;
-      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+      transition: box-shadow 0.2s ease;
     }
-
     input:focus, select:focus { box-shadow: 0 0 0 3px var(--accent-blue); }
 
     .hidden { display: none !important; }
@@ -146,458 +141,178 @@
       border-bottom: var(--border);
       background: var(--surface);
       flex-shrink: 0;
-      gap: 12px;
       z-index: 10;
     }
-
     .app-header .logo {
       font-family: var(--font-display);
       font-weight: 900;
       font-size: 1.4rem;
       letter-spacing: -0.03em;
-      line-height: 1;
     }
-
     .app-header .logo span { color: var(--accent-coral); }
-
-    .header-actions { display: flex; align-items: center; gap: 8px; }
-
     .theme-toggle {
-      width: 44px; height: 44px;
-      padding: 0;
-      border-radius: 50%;
-      font-size: 1.2rem;
-      box-shadow: var(--shadow-hard);
-      display: flex; align-items: center; justify-content: center;
+      width: 44px; height: 44px; padding: 0; border-radius: 50%;
+      box-shadow: var(--shadow-hard); display: flex; align-items: center; justify-content: center;
     }
 
     /* ЭКРАНЫ */
     .screen {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
+      flex: 1; display: flex; flex-direction: column; overflow: hidden;
       animation: screenIn 0.45s var(--ease-out-expo);
     }
-
     @keyframes screenIn {
       from { opacity: 0; transform: translateY(12px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
     /* ЛОББИ */
-    .lobby-scroll {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px 16px 40px;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .lobby-inner {
-      max-width: 560px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
+    .lobby-scroll { flex: 1; overflow-y: auto; padding: 20px 16px 40px; }
+    .lobby-inner { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
     .lobby-hero { text-align: center; padding: 12px 0 4px; }
-    .lobby-hero h1 {
-      font-family: var(--font-display);
-      font-weight: 900;
-      font-size: clamp(2.4rem, 8vw, 3.6rem);
-      line-height: 1.05;
-      letter-spacing: -0.04em;
-    }
+    .lobby-hero h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(2.4rem, 8vw, 3.6rem); line-height: 1.05; }
     .lobby-hero h1 em { font-style: italic; color: var(--accent-coral); }
-    .lobby-hero p { color: var(--ink-muted); font-size: 0.9rem; margin-top: 8px; }
-
+    
     .card {
-      background: var(--surface);
-      border: var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-hard);
-      padding: 20px;
-      transition: transform 0.25s var(--ease-out-expo), box-shadow 0.25s var(--ease-out-expo);
+      background: var(--surface); border: var(--border); border-radius: var(--radius);
+      box-shadow: var(--shadow-hard); padding: 20px;
     }
-
-    .card h2 {
-      font-family: var(--font-display);
-      font-size: 1.3rem;
-      font-weight: 700;
-      margin-bottom: 14px;
-    }
-
+    .card h2 { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; margin-bottom: 14px; }
+    
     .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-    .field label {
-      font-size: 0.78rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--ink-muted);
-    }
-
+    .field label { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; color: var(--ink-muted); }
     .row { display: flex; gap: 10px; flex-wrap: wrap; }
     .row > * { flex: 1; min-width: 0; }
 
-    .segmented {
-      display: flex;
-      border: var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      background: var(--surface-alt);
-    }
+    .segmented { display: flex; border: var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface-alt); }
+    .segmented button { flex: 1; border: none; border-radius: 0; box-shadow: none; background: transparent; padding: 10px 8px; font-size: 0.85rem; color: var(--ink-muted); min-height: 48px; }
+    .segmented button.active { background: var(--accent-blue); color: #fff; box-shadow: inset 0 0 0 2px var(--ink); }
 
-    .segmented button {
-      flex: 1;
-      border: none;
-      border-radius: 0;
-      box-shadow: none;
-      background: transparent;
-      padding: 10px 8px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--ink-muted);
-      min-height: 48px;
-    }
-
-    .segmented button.active {
-      background: var(--accent-blue);
-      color: #fff;
-      box-shadow: inset 0 0 0 2px var(--ink);
-    }
-
-    .avatar-preview {
-      width: 56px; height: 56px;
-      border-radius: 50%;
-      border: var(--border);
-      background: var(--surface-alt);
-      flex-shrink: 0;
-      overflow: hidden;
-      display: flex; align-items: center; justify-content: center;
-    }
-
+    .avatar-preview { width: 56px; height: 56px; border-radius: 50%; border: var(--border); background: var(--surface-alt); flex-shrink: 0; overflow: hidden; }
     .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
 
-    .player-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      max-height: 260px;
-      overflow-y: auto;
-      padding-right: 4px;
-    }
-
+    .player-list { display: flex; flex-direction: column; gap: 8px; max-height: 260px; overflow-y: auto; }
     .player-chip {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 10px;
-      border: 1.5px solid var(--ink);
-      border-radius: 10px;
-      background: var(--surface);
-      font-size: 0.88rem;
-      animation: chipIn 0.4s var(--ease-spring) both;
+      display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+      border: 1.5px solid var(--ink); border-radius: 10px; background: var(--surface); font-size: 0.88rem;
     }
-
-    @keyframes chipIn {
-      from { opacity: 0; transform: translateX(-10px) scale(0.95); }
-      to   { opacity: 1; transform: translateX(0) scale(1); }
-    }
-
-    .player-chip .avatar {
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      border: 1.5px solid var(--ink);
-      overflow: hidden;
-      flex-shrink: 0;
-      background: var(--surface-alt);
-    }
-
+    .player-chip .avatar { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--ink); overflow: hidden; }
     .player-chip .avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .player-chip .name {
-      flex: 1;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .badge {
-      font-size: 0.65rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 3px 7px;
-      border-radius: 999px;
-      border: 1px solid var(--ink);
-      line-height: 1;
-    }
-
+    .player-chip .name { flex: 1; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    .badge { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; padding: 3px 7px; border-radius: 999px; border: 1px solid var(--ink); }
     .badge.host { background: var(--host-badge); color: #141414; }
     .badge.me { background: var(--accent-blue); color: #fff; }
     .badge.score { background: var(--surface-alt); }
 
     /* ИГРОВОЙ ЭКРАН */
     .game-layout { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-
+    
     .game-topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 16px;
-      border-bottom: var(--border);
-      background: var(--surface);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px; border-bottom: var(--border); background: var(--surface);
       flex-shrink: 0;
-      gap: 10px;
     }
-
-    .round-badge {
-      font-family: var(--font-display);
-      font-weight: 700;
-      font-size: 1rem;
-      white-space: nowrap;
-    }
-
+    .round-badge { font-family: var(--font-display); font-weight: 700; font-size: 1rem; }
     .timer {
-      font-family: var(--font-display);
-      font-weight: 900;
-      font-size: 1.4rem;
-      font-variant-numeric: tabular-nums;
-      min-width: 60px;
-      text-align: center;
-      padding: 2px 12px;
-      border: var(--border);
-      border-radius: 999px;
-      background: var(--accent-yellow);
-      color: #141414;
-      line-height: 1.3;
+      font-family: var(--font-display); font-weight: 900; font-size: 1.4rem;
+      padding: 2px 12px; border: var(--border); border-radius: 999px; background: var(--accent-yellow); color: #141414;
     }
-
     .timer.warning { background: var(--accent-coral); color: #fff; animation: pulseTimer 0.8s ease infinite; }
     @keyframes pulseTimer { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
-
+    
     .role-pill {
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1.5px solid var(--ink);
-      background: var(--surface-alt);
-      white-space: nowrap;
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase; padding: 6px 10px;
+      border-radius: 999px; border: 1.5px solid var(--ink); background: var(--surface-alt);
     }
-
     .role-pill.host { background: var(--host-badge); color: #141414; }
     .role-pill.guesser { background: var(--guess-badge); color: #fff; }
+    
+    .topbar-actions { display: flex; align-items: center; gap: 10px; }
+    .btn-exit { padding: 6px 12px; min-height: 36px; font-size: 0.8rem; box-shadow: 2px 2px 0 var(--ink); }
+
+    /* Контентная часть игры */
+    .game-content { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
 
     .word-area {
-      padding: 18px 16px;
-      text-align: center;
-      border-bottom: var(--border);
-      background: var(--surface);
-      flex-shrink: 0;
+      padding: 20px 16px; text-align: center; border-bottom: var(--border);
+      background: var(--surface-alt); flex-shrink: 0;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
     }
-
-    .word-label {
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--ink-muted);
-      margin-bottom: 10px;
-    }
-
+    .word-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 8px; }
     .word-secret {
-      font-family: var(--font-display);
-      font-weight: 900;
-      font-size: clamp(1.8rem, 7vw, 2.8rem);
-      line-height: 1.1;
-      letter-spacing: -0.02em;
-      word-break: break-word;
+      font-family: var(--font-display); font-weight: 900; font-size: clamp(2rem, 6vw, 3.5rem);
+      color: var(--accent-coral); word-break: break-word; line-height: 1.1; margin-bottom: 10px;
       animation: popIn 0.5s var(--ease-spring);
     }
+    .instruction-text { font-size: 0.85rem; color: var(--ink-muted); max-width: 300px; margin: 0 auto; }
+    .instruction-text strong { color: var(--accent-coral); }
 
-    @keyframes popIn {
-      from { opacity: 0; transform: scale(0.7) rotate(-3deg); }
-      to   { opacity: 1; transform: scale(1) rotate(0); }
-    }
-
-    .word-hint-note { font-size: 0.75rem; color: var(--accent-coral); font-weight: 600; margin-top: 8px; }
-
-    .letter-boxes {
-      display: flex;
-      justify-content: center;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-top: 4px;
-    }
-
+    .letter-boxes { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
     .letter-box {
-      width: 38px; height: 46px;
-      border: var(--border);
-      border-radius: 6px;
-      background: var(--surface-alt);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: var(--font-display);
-      font-weight: 700;
-      font-size: 1.3rem;
+      width: 42px; height: 52px; border: var(--border); border-radius: 6px;
+      background: var(--surface); display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-weight: 700; font-size: 1.4rem;
       transition: transform 0.4s var(--ease-spring), background 0.3s ease;
-      transform-style: preserve-3d;
     }
-
     .letter-box.revealed { background: var(--accent-green); color: #fff; animation: flipLetter 0.6s var(--ease-spring); }
-    @keyframes flipLetter {
-      0%   { transform: rotateY(0); }
-      50%  { transform: rotateY(90deg) scale(1.2); }
-      100% { transform: rotateY(0) scale(1); }
-    }
+    @keyframes flipLetter { 0% { transform: rotateY(0); } 50% { transform: rotateY(90deg) scale(1.2); } 100% { transform: rotateY(0) scale(1); } }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
 
-    .chat-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
-
-    .chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .msg {
-      max-width: 85%;
-      padding: 10px 14px;
-      border: 1.5px solid var(--ink);
-      border-radius: 14px;
-      background: var(--surface);
-      font-size: 0.9rem;
-      line-height: 1.4;
-      animation: msgIn 0.3s var(--ease-out-expo) both;
-      word-wrap: break-word;
-      box-shadow: 2px 2px 0 var(--ink);
-    }
-
-    @keyframes msgIn {
-      from { opacity: 0; transform: translateY(8px) scale(0.97); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    .msg.self { align-self: flex-end; background: var(--accent-blue); color: #fff; }
-    .msg.hint { align-self: flex-start; background: var(--surface-alt); border-left: 5px solid var(--hint-badge); }
-    .msg.system {
-      align-self: center;
-      background: var(--surface-alt);
-      font-size: 0.8rem;
-      color: var(--ink-muted);
-      border-style: dashed;
-      text-align: center;
-      max-width: 95%;
-      box-shadow: none;
-    }
-    .msg.correct {
-      align-self: center;
-      background: var(--accent-green);
-      color: #fff;
-      font-weight: 700;
-      animation: popIn 0.4s var(--ease-spring);
-    }
-
-    .msg .msg-author {
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      opacity: 0.7;
-      margin-bottom: 2px;
-    }
-
-    .msg .msg-hint-tag {
-      font-size: 0.65rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--hint-badge);
-      display: block;
-      margin-bottom: 2px;
-    }
-
-    .chat-input-bar {
-      flex-shrink: 0;
-      display: flex;
-      gap: 8px;
-      padding: 10px 12px;
-      padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-      border-top: var(--border);
-      background: var(--surface);
-      align-items: flex-end;
-      transition: transform 0.2s var(--ease-out-expo);
-    }
-
-    .chat-input-bar input { flex: 1; min-height: 48px; border-radius: 999px; padding: 12px 18px; }
-    .chat-input-bar button {
-      flex-shrink: 0;
-      width: 48px; height: 48px;
-      padding: 0;
-      border-radius: 50%;
-      background: var(--accent-coral);
-      color: #fff;
-      font-size: 1.1rem;
-    }
-
-    .host-controls { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
+    .host-controls { margin-top: 12px; }
     .host-controls button { font-size: 0.8rem; padding: 8px 14px; min-height: 40px; }
 
-    /* МОДАЛЬНЫЕ ОКНА / TOAST */
-    .toast-container {
-      position: fixed;
-      top: 70px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 1000;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      pointer-events: none;
-      width: min(92vw, 400px);
+    /* ЧАТ */
+    .chat-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
+    .chat-messages {
+      flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px;
+      scroll-behavior: smooth; align-items: flex-start; /* Прижимаем сообщения к левому краю */
     }
-
-    .toast {
-      background: var(--surface);
-      border: var(--border);
-      border-radius: 12px;
-      padding: 12px 18px;
-      box-shadow: var(--shadow-hard);
-      font-size: 0.88rem;
-      font-weight: 600;
-      text-align: center;
-      animation: toastIn 0.35s var(--ease-spring), toastOut 0.35s var(--ease-out-expo) 2.5s forwards;
-      pointer-events: auto;
+    
+    .msg {
+      max-width: 85%; padding: 10px 14px; border: 1.5px solid var(--ink); border-radius: 14px;
+      background: var(--surface); font-size: 0.95rem; line-height: 1.4;
+      animation: msgIn 0.3s var(--ease-out-expo) both; word-break: break-word;
+      box-shadow: 2px 2px 0 var(--ink); align-self: flex-start;
     }
+    .msg.self { align-self: flex-end; background: var(--accent-blue); color: #fff; }
+    .msg.hint { background: var(--surface-alt); border-left: 6px solid var(--hint-badge); }
+    .msg.system { align-self: center; background: transparent; font-size: 0.8rem; color: var(--ink-muted); border-style: dashed; box-shadow: none; }
+    .msg.correct { align-self: center; background: var(--accent-green); color: #fff; font-weight: 700; border-color: var(--ink); }
+    
+    .msg-author { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; opacity: 0.7; margin-bottom: 4px; }
+    .msg-hint-tag { font-size: 0.65rem; font-weight: 800; color: var(--hint-badge); display: block; margin-bottom: 4px; }
+    @keyframes msgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
+    .chat-input-bar {
+      flex-shrink: 0; display: flex; gap: 8px; padding: 12px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      border-top: var(--border); background: var(--surface); align-items: flex-end;
+    }
+    .chat-input-bar input { flex: 1; min-height: 48px; border-radius: 999px; padding: 12px 18px; }
+    .chat-input-bar button { flex-shrink: 0; width: 48px; height: 48px; padding: 0; border-radius: 50%; background: var(--accent-coral); color: #fff; font-size: 1.1rem; }
+
+    /* Toast */
+    .toast-container { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; width: min(92vw, 400px); }
+    .toast { background: var(--surface); border: var(--border); border-radius: 12px; padding: 12px 18px; box-shadow: var(--shadow-hard); font-size: 0.88rem; font-weight: 600; text-align: center; animation: toastIn 0.35s var(--ease-spring), toastOut 0.35s var(--ease-out-expo) 2.5s forwards; }
     .toast.error { background: var(--accent-coral); color: #fff; }
     .toast.success { background: var(--accent-green); color: #fff; }
-
     @keyframes toastIn { from { opacity: 0; transform: translateY(-12px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
     @keyframes toastOut { to { opacity: 0; transform: translateY(-8px) scale(0.95); } }
-
     #confetti-canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 900; }
 
-    /* АДАПТИВНОСТЬ */
+    /* ДЕСКТОПНАЯ АДАПТАЦИЯ */
     @media (min-width: 720px) {
       .lobby-inner { max-width: 620px; }
-      .game-layout { flex-direction: row; }
-      .chat-area { border-left: var(--border); }
-      .word-area { min-width: 320px; }
+      .game-content { flex-direction: row; }
+      .word-area {
+        width: 380px; min-width: 380px; border-bottom: none;
+        border-right: var(--border); justify-content: flex-start; padding-top: 40px;
+      }
+      .chat-area { flex: 1; }
     }
-
+    
     @media (max-width: 380px) {
-      .letter-box { width: 30px; height: 38px; font-size: 1rem; }
-      .word-secret { font-size: 1.6rem; }
+      .letter-box { width: 32px; height: 42px; font-size: 1.1rem; }
     }
   </style>
 </head>
@@ -615,10 +330,9 @@
     <section class="screen" id="screen-lobby">
       <div class="lobby-scroll">
         <div class="lobby-inner">
-
           <div class="lobby-hero">
             <h1>Игра в <em>ассоциации</em><br>без границ</h1>
-            <p>Онлайн-мультиплеер до 32 игроков · без бэкенда</p>
+            <p>Онлайн-мультиплеер до 32 игроков</p>
           </div>
 
           <div class="card">
@@ -632,7 +346,6 @@
             </div>
           </div>
 
-          <!-- Создание комнаты -->
           <div class="card" id="createRoomCard">
             <h2>Создать комнату</h2>
             <div class="field">
@@ -664,7 +377,6 @@
             <button class="primary" id="createRoomBtn" style="width:100%;">Создать комнату</button>
           </div>
 
-          <!-- Подключение -->
           <div class="card" id="joinRoomCard">
             <h2>Присоединиться</h2>
             <div class="field">
@@ -677,7 +389,6 @@
             </div>
           </div>
 
-          <!-- Лобби в комнате -->
           <div class="card hidden" id="lobbyPlayersCard">
             <h2>Участники <span id="playerCountLabel" style="font-size:0.8rem;color:var(--ink-muted);font-weight:400;"></span></h2>
             <div class="player-list" id="lobbyPlayerList"></div>
@@ -688,8 +399,6 @@
             <button class="primary" id="startGameBtn" style="width:100%; margin-top:10px;">Начать игру</button>
             <p id="waitingHostText" class="hidden" style="text-align:center; font-size:0.85rem; color:var(--ink-muted); margin-top:10px;">Ожидаем, когда хост начнет игру...</p>
           </div>
-
-          <div id="connectionStatus" style="text-align:center;font-size:0.8rem;color:var(--ink-muted);"></div>
         </div>
       </div>
     </section>
@@ -697,27 +406,42 @@
     <!-- ЭКРАН ИГРЫ -->
     <section class="screen hidden" id="screen-game">
       <div class="game-layout">
-        <div style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
-
-          <div class="game-topbar">
-            <span class="round-badge" id="roundLabel">Раунд 1</span>
-            <span class="timer" id="timerDisplay">90</span>
+        
+        <!-- Верхняя панель -->
+        <div class="game-topbar">
+          <span class="round-badge" id="roundLabel">Раунд 1</span>
+          <span class="timer" id="timerDisplay">90</span>
+          <div class="topbar-actions">
             <span class="role-pill guesser" id="rolePill">Отгадываю</span>
+            <button class="btn-exit ghost" id="leaveGameBtn">Выйти</button>
           </div>
+        </div>
 
+        <!-- Основной контент -->
+        <div class="game-content">
+          
+          <!-- Левая панель: Слово и статус -->
           <div class="word-area">
             <div class="word-label" id="wordLabel">Загаданное слово</div>
             <div id="wordDisplayContainer"></div>
-            <div class="word-hint-note hidden" id="hostHintNote">Нельзя использовать однокоренные слова!</div>
+            
+            <div id="hostHintNote" class="instruction-text hidden" style="margin-top: 15px;">
+              Пишите намеки <strong>в чат справа</strong>.<br>Нельзя использовать однокоренные слова!
+            </div>
+            <div id="guesserNote" class="instruction-text" style="margin-top: 15px;">
+              Пишите ваши догадки <strong>в чат</strong>. Угадавший получит очки!
+            </div>
+
             <div class="host-controls hidden" id="hostControls">
               <button id="changeWordBtn" class="ghost">Сменить слово (<span id="changeWordCount">1</span>)</button>
             </div>
           </div>
 
+          <!-- Правая панель: Чат -->
           <div class="chat-area">
             <div class="chat-messages" id="chatMessages"></div>
             <div class="chat-input-bar">
-              <input id="chatInput" type="text" placeholder="Ваше сообщение..." autocomplete="off" maxlength="140">
+              <input id="chatInput" type="text" placeholder="Введите сообщение..." autocomplete="off" maxlength="140">
               <button id="chatSendBtn" aria-label="Отправить">➤</button>
             </div>
           </div>
@@ -744,25 +468,17 @@
     };
 
     // ============================================================
-    // СОСТОЯНИЕ И ПЕРЕМЕННЫЕ СЕТИ
+    // СОСТОЯНИЕ
     // ============================================================
-    let sendData = null; // Функция отправки Trystero
-    let getData = null;  // Функция приема Trystero
+    let sendData = null;
+    let getData = null;
 
     const AppState = {
-      room: null,
-      isHost: false,
-      players: new Map(),
-      round: {
-        number: 1, hostId: null, secretWord: '', wordLength: 0,
-        hintsUsed: 0, maxHints: 1, timeLeft: 90, totalTime: 90,
-        timerInterval: null, active: false, guessed: false, winnerId: null
-      },
+      room: null, isHost: false, players: new Map(),
+      round: { number: 1, hostId: null, secretWord: '', wordLength: 0, hintsUsed: 0, maxHints: 1, timeLeft: 90, totalTime: 90, timerInterval: null, active: false, guessed: false, winnerId: null },
       settings: { maxPlayers: 8, roundTime: 90, category: 'general' },
       me: { id: null, name: '', avatar: '', score: 0, isHost: false },
-      roomCode: '',
-      lastMessageTime: 0,
-      messageCooldown: 700
+      roomCode: '', lastMessageTime: 0, messageCooldown: 700
     };
 
     // ============================================================
@@ -780,15 +496,8 @@
       setTimeout(() => { el.remove(); }, 3000);
     }
 
-    function generateRoomCode() {
-      return 'CROC-' + Math.floor(1000 + Math.random() * 9000);
-    }
-
-    function avatarUrl(seed) {
-      const s = encodeURIComponent(seed || 'player');
-      return `https://api.dicebear.com/9.x/bottts/svg?seed=${s}&backgroundColor=254edb,ff5a36,f4b400,1f9d55,ffffff&radius=50`;
-    }
-
+    function generateRoomCode() { return 'CROC-' + Math.floor(1000 + Math.random() * 9000); }
+    function avatarUrl(seed) { return `https://api.dicebear.com/9.x/bottts/svg?seed=${encodeURIComponent(seed || 'player')}&backgroundColor=254edb,ff5a36,f4b400,1f9d55,ffffff&radius=50`; }
     function normalizeWord(w) { return w.toLowerCase().replace(/ё/g, 'е').trim(); }
     function isGuessCorrect(guess, secret) { return normalizeWord(guess) === normalizeWord(secret); }
 
@@ -796,16 +505,10 @@
     // ТЕМА
     // ============================================================
     function initTheme() {
-      const saved = localStorage.getItem('crocodile-theme') || 'light';
-      document.body.dataset.theme = saved;
+      document.body.dataset.theme = localStorage.getItem('crocodile-theme') || 'light';
       updateThemeToggleIcon();
     }
-
-    function updateThemeToggleIcon() {
-      const isDark = document.body.dataset.theme === 'dark';
-      $('#themeToggle').textContent = isDark ? '☀' : '◐';
-    }
-
+    function updateThemeToggleIcon() { $('#themeToggle').textContent = document.body.dataset.theme === 'dark' ? '☀' : '◐'; }
     function toggleTheme() {
       const next = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
       document.body.dataset.theme = next;
@@ -814,74 +517,18 @@
     }
 
     // ============================================================
-    // КОНФЕТТИ
-    // ============================================================
-    const confetti = {
-      canvas: null, ctx: null, particles: [], running: false,
-      colors: ['#254EDB', '#FF5A36', '#F4B400', '#1F9D55', '#F2EFE9', '#141414'],
-      init() {
-        this.canvas = $('#confetti-canvas');
-        this.ctx = this.canvas.getContext('2d');
-        this.resize();
-        window.addEventListener('resize', () => this.resize());
-      },
-      resize() {
-        if (!this.canvas) return;
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
-      },
-      burst(count = 120) {
-        this.canvas.classList.remove('hidden');
-        const cx = this.canvas.width / 2;
-        const cy = this.canvas.height * 0.35;
-        for (let i = 0; i < count; i++) {
-          this.particles.push({
-            x: cx + (Math.random() - 0.5) * 200, y: cy + (Math.random() - 0.5) * 80,
-            vx: (Math.random() - 0.5) * 12, vy: (Math.random() - 0.8) * 14 - 4,
-            size: 4 + Math.random() * 6, color: this.colors[Math.floor(Math.random() * this.colors.length)],
-            rotation: Math.random() * Math.PI * 2, vr: (Math.random() - 0.5) * 0.3, life: 1
-          });
-        }
-        if (!this.running) { this.running = true; this.loop(); }
-      },
-      loop() {
-        if (!this.running) return;
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        let alive = false;
-        this.particles.forEach(p => {
-          p.vy += 0.35; p.vx *= 0.99; p.x += p.vx; p.y += p.vy;
-          p.rotation += p.vr; p.life -= 0.008;
-          if (p.life > 0) {
-            alive = true;
-            this.ctx.save();
-            this.ctx.globalAlpha = Math.max(0, p.life);
-            this.ctx.translate(p.x, p.y); this.ctx.rotate(p.rotation);
-            this.ctx.fillStyle = p.color;
-            this.ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size * 0.6);
-            this.ctx.restore();
-          }
-        });
-        this.particles = this.particles.filter(p => p.life > 0);
-        if (!alive) { this.running = false; this.canvas.classList.add('hidden'); this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); }
-        else requestAnimationFrame(() => this.loop());
-      }
-    };
-
-    // ============================================================
     // СЕТЬ (TRYSTERO)
     // ============================================================
     function connectToRoom(roomCode) {
       AppState.roomCode = roomCode;
-      const room = joinRoom({ appId: 'crocodile-editorial-pop-art-v3' }, roomCode);
+      const room = joinRoom({ appId: 'crocodile-editorial-pop-art-v4' }, roomCode);
       AppState.room = room;
       
-      // Инициализируем канал передачи данных СТРОГО ОДИН РАЗ
       [sendData, getData] = room.makeAction('data');
 
       room.onPeerJoin(peerId => {
         console.log('Peer joined:', peerId);
         if (!AppState.isHost) {
-          // Если я клиент, я сообщаю новому пиру (хосту), что я здесь
           sendData({ type: 'hello', name: AppState.me.name, avatar: AppState.me.avatar }, peerId);
         }
       });
@@ -902,9 +549,7 @@
     // ============================================================
     function getPublicState() {
       return {
-        players: [...AppState.players.values()].map(p => ({
-          id: p.id, name: p.name, avatar: p.avatar, score: p.score, isHost: p.isHost
-        })),
+        players: [...AppState.players.values()].map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, isHost: p.isHost })),
         round: {
           number: AppState.round.number, hostId: AppState.round.hostId,
           wordLength: AppState.round.wordLength, timeLeft: AppState.round.timeLeft,
@@ -918,7 +563,7 @@
     function broadcastState() {
       if (!AppState.isHost || !sendData) return;
       sendData({ type: 'state', ...getPublicState() });
-      renderGameState(getPublicState()); // Обновляем свой интерфейс
+      renderGameState(getPublicState());
       updatePlayerListUI();
     }
 
@@ -927,9 +572,7 @@
       if (!hostId) return;
       if (hostId === AppState.me.id) {
         showHostWordUI(AppState.round.secretWord);
-        return;
-      }
-      if (sendData) {
+      } else if (sendData) {
         sendData({ type: 'secret-word', word: AppState.round.secretWord, hintsUsed: AppState.round.hintsUsed, maxHints: AppState.round.maxHints }, hostId);
       }
     }
@@ -938,16 +581,11 @@
       if (data.type === 'hello') {
         const name = (data.name || 'Игрок').slice(0, 20);
         const avatar = data.avatar || avatarUrl(name);
-        
-        // Добавляем игрока в список
         AppState.players.set(peerId, { id: peerId, name, avatar, score: 0, isHost: false });
-        
-        // Рассылаем всем обновленный список
         broadcastState();
         addSystemMessage(`${name} присоединился к игре.`);
         return;
       }
-      
       if (data.type === 'chat') {
         const text = String(data.text || '').slice(0, 140);
         if (text) handleIncomingMessage(peerId, text);
@@ -961,10 +599,6 @@
       broadcastState();
       addSystemMessage(`${player.name} покинул игру.`);
       if (AppState.round.hostId === peerId && AppState.round.active) endRound('timeout');
-      if (AppState.players.size < 2 && AppState.round.active) {
-        stopTimer();
-        addSystemMessage('Недостаточно игроков. Игра приостановлена.');
-      }
     }
 
     // ============================================================
@@ -989,8 +623,12 @@
         active: true, guessed: false, winnerId: null
       };
       AppState.lastMessageTime = 0;
-      broadcastState();
-      sendSecretWordToHost();
+      
+      // Очищаем экран перед новым раундом
+      $('#wordDisplayContainer').innerHTML = ''; 
+      
+      broadcastState(); // Рассылаем всем пустое состояние
+      sendSecretWordToHost(); // Отправляем слово ведущему
       startTimer();
       addSystemMessage(`Раунд ${roundNumber}. Ведущий: ${getPlayerName(hostId)}. Время пошло!`);
     }
@@ -1039,7 +677,6 @@
         }
         if (sendData) sendData({ type: 'round-end', secretWord: AppState.round.secretWord, winnerId: winnerId, scores: [...AppState.players.values()].map(p => ({ id: p.id, score: p.score })) });
         showWordRevealed(AppState.round.secretWord);
-        confetti.burst(160);
       } else {
         systemMsg = `⏰ Время вышло! Слово было: «${AppState.round.secretWord}».`;
         if (sendData) sendData({ type: 'round-end', secretWord: AppState.round.secretWord, winnerId: null, scores: [...AppState.players.values()].map(p => ({ id: p.id, score: p.score })) });
@@ -1050,11 +687,12 @@
       updatePlayerListUI();
       broadcastState();
 
-      setTimeout(() => { if (AppState.isHost) nextRoundHost(); }, 4000);
+      setTimeout(() => { if (AppState.isHost) nextRoundHost(); }, 5000); // 5 сек на посмотреть слово
     }
 
     function nextRoundHost() {
       const playerIds = [...AppState.players.keys()];
+      if (playerIds.length === 0) return;
       const currentIdx = playerIds.indexOf(AppState.round.hostId);
       const nextIdx = (currentIdx + 1) % playerIds.length;
       startNewRound(playerIds[nextIdx], AppState.round.number + 1);
@@ -1069,10 +707,7 @@
 
       const now = Date.now();
       if (peerId !== AppState.me.id) {
-        if (player._lastMsg && now - player._lastMsg < AppState.messageCooldown) {
-          if (sendData) sendData({ type: 'rate-limit' }, peerId);
-          return;
-        }
+        if (player._lastMsg && now - player._lastMsg < AppState.messageCooldown) return;
         player._lastMsg = now;
       }
 
@@ -1098,7 +733,7 @@
 
       const now = Date.now();
       if (now - AppState.lastMessageTime < AppState.messageCooldown) {
-        showToast('Слишком часто! Подождите.', 'error');
+        showToast('Слишком часто!', 'error');
         return;
       }
       AppState.lastMessageTime = now;
@@ -1107,7 +742,6 @@
         handleIncomingMessage(AppState.me.id, text);
       } else {
         if (sendData) sendData({ type: 'chat', text: text });
-        // Отображаем свое сообщение локально, чтобы не ждать ответа от хоста
         appendChatMessage({ type: 'chat', peerId: AppState.me.id, name: AppState.me.name, avatar: AppState.me.avatar, text: text, isHint: false, timestamp: now });
       }
 
@@ -1121,24 +755,32 @@
     function renderGameState(state) {
       updateTimerUI();
       const isRoundHost = state.round.hostId === AppState.me.id;
-      const rolePill = $('#rolePill');
-
+      
       if (isRoundHost) {
-        rolePill.textContent = 'Ведущий';
-        rolePill.className = 'role-pill host';
+        $('#rolePill').textContent = 'Вы ВЕДУЩИЙ';
+        $('#rolePill').className = 'role-pill host';
         $('#hostControls').classList.remove('hidden');
         $('#hostHintNote').classList.remove('hidden');
-        $('#wordLabel').textContent = 'Ваше слово (никому не говорите!)';
+        $('#guesserNote').classList.add('hidden');
+        $('#wordLabel').textContent = 'Ваше секретное слово';
       } else {
-        rolePill.textContent = 'Отгадываю';
-        rolePill.className = 'role-pill guesser';
+        $('#rolePill').textContent = 'Вы ОТГАДЫВАЕТЕ';
+        $('#rolePill').className = 'role-pill guesser';
         $('#hostControls').classList.add('hidden');
         $('#hostHintNote').classList.add('hidden');
+        $('#guesserNote').classList.remove('hidden');
         $('#wordLabel').textContent = 'Загаданное слово';
-        if (state.round.active) renderLetterBoxes(state.round.wordLength, null);
       }
 
       $('#roundLabel').textContent = `Раунд ${state.round.number}`;
+      
+      // Если игра активна и я не ведущий, рисую пустые квадраты
+      if (!isRoundHost && state.round.active) {
+        // Если контейнер пуст, рисуем квадраты
+        if ($('#wordDisplayContainer').children.length === 0 || $('#wordDisplayContainer').querySelector('.letter-box')) {
+           renderLetterBoxes(state.round.wordLength, null);
+        }
+      }
     }
 
     function renderLetterBoxes(length, revealedWord) {
@@ -1185,9 +827,8 @@
 
     function updateChangeWordButton() {
       const btn = $('#changeWordBtn');
-      const countSpan = $('#changeWordCount');
       const left = AppState.round.maxHints - AppState.round.hintsUsed;
-      if (countSpan) countSpan.textContent = left;
+      $('#changeWordCount').textContent = left;
       if (btn) btn.disabled = left <= 0 || !AppState.round.active;
     }
 
@@ -1203,14 +844,12 @@
       if (!list) return;
       list.innerHTML = '';
       const players = [...AppState.players.values()];
-      const countLabel = $('#playerCountLabel');
-      if (countLabel) countLabel.textContent = `(${players.length}/${AppState.settings.maxPlayers})`;
+      $('#playerCountLabel').textContent = `(${players.length}/${AppState.settings.maxPlayers})`;
 
-      players.forEach((p, i) => {
+      players.forEach((p) => {
         const chip = document.createElement('div');
         chip.className = 'player-chip';
-        chip.style.animationDelay = `${i * 0.04}s`;
-
+        
         const av = document.createElement('div');
         av.className = 'avatar';
         const img = document.createElement('img');
@@ -1225,21 +864,12 @@
         badges.style.cssText = 'display:flex;gap:4px;align-items:center';
 
         if (p.isHost) {
-          const b = document.createElement('span');
-          b.className = 'badge host';
-          b.textContent = 'Хост';
-          badges.appendChild(b);
+          const b = document.createElement('span'); b.className = 'badge host'; b.textContent = 'Хост'; badges.appendChild(b);
         }
         if (p.id === AppState.me.id) {
-          const b = document.createElement('span');
-          b.className = 'badge me';
-          b.textContent = 'Вы';
-          badges.appendChild(b);
+          const b = document.createElement('span'); b.className = 'badge me'; b.textContent = 'Вы'; badges.appendChild(b);
         }
-        const scoreB = document.createElement('span');
-        scoreB.className = 'badge score';
-        scoreB.textContent = p.score || 0;
-        badges.appendChild(scoreB);
+        const scoreB = document.createElement('span'); scoreB.className = 'badge score'; scoreB.textContent = p.score || 0; badges.appendChild(scoreB);
 
         chip.append(av, name, badges);
         list.appendChild(chip);
@@ -1258,13 +888,12 @@
         el.classList.add('correct');
         el.textContent = msg.text;
       } else {
-        const isSelf = msg.peerId === AppState.me.id;
-        if (isSelf) el.classList.add('self');
+        if (msg.peerId === AppState.me.id) el.classList.add('self');
         if (msg.isHint) el.classList.add('hint');
 
         const author = document.createElement('div');
         author.className = 'msg-author';
-        author.textContent = msg.name || '???';
+        author.textContent = msg.name;
         el.appendChild(author);
 
         if (msg.isHint) {
@@ -1284,13 +913,12 @@
     }
 
     function addSystemMessage(text) {
-      const msg = { type: 'system', text: text };
-      if (AppState.isHost && sendData) sendData(msg);
-      appendChatMessage(msg);
+      if (AppState.isHost && sendData) sendData({ type: 'system', text: text });
+      appendChatMessage({ type: 'system', text: text });
     }
 
     // ============================================================
-    // ЭКРАНЫ
+    // ЭКРАНЫ И УПРАВЛЕНИЕ
     // ============================================================
     function showScreen(name) {
       $('#screen-lobby').classList.toggle('hidden', name !== 'lobby');
@@ -1303,7 +931,6 @@
         $('#joinRoomCard').classList.add('hidden');
         $('#lobbyPlayersCard').classList.remove('hidden');
         
-        // Показываем кнопку старта только хосту
         if (AppState.isHost) {
           $('#startGameBtn').classList.remove('hidden');
           $('#waitingHostText').classList.add('hidden');
@@ -1323,26 +950,25 @@
       if (AppState.players.size < 2) { showToast('Нужно хотя бы 2 игрока', 'error'); return; }
       showScreen('game');
       $('#chatMessages').innerHTML = '';
-      startNewRound([...AppState.players.keys()][0], 1);
+      
+      // Хост всегда начинает первым (или можно по индексу)
+      const firstHostId = [...AppState.players.keys()][0];
+      startNewRound(firstHostId, 1);
+      
       if (sendData) sendData({ type: 'game-started' });
     }
 
     function leaveRoom() {
       stopTimer();
-      if (AppState.room) {
-        AppState.room.leave();
-        AppState.room = null;
-      }
+      if (AppState.room) { AppState.room.leave(); AppState.room = null; }
       AppState.players.clear();
       AppState.isHost = false;
       AppState.roomCode = '';
-      AppState.me.score = 0;
-      sendData = null; 
-      getData = null;
+      sendData = null; getData = null;
       showScreen('lobby');
       updateLobbyUIState();
       updatePlayerListUI();
-      showToast('Вы вышли из комнаты');
+      showToast('Вы вышли из игры');
     }
 
     // ============================================================
@@ -1353,39 +979,30 @@
       if (!nickname) { showToast('Введите никнейм', 'error'); return; }
 
       const btn = $('#createRoomBtn');
-      btn.disabled = true;
-      btn.textContent = 'Подключение...';
+      btn.disabled = true; btn.textContent = 'Подключение...';
 
       try {
         AppState.isHost = true;
         const roomCode = generateRoomCode();
-        
         connectToRoom(roomCode);
         
-        // Ждем микро-тик, чтобы Trystero выдал selfId
         setTimeout(() => {
           AppState.me.id = AppState.room.selfId;
           AppState.me.name = nickname;
           AppState.me.avatar = avatarUrl(nickname);
           AppState.me.isHost = true;
           
-          AppState.players.set(AppState.me.id, {
-            id: AppState.me.id, name: nickname, avatar: avatarUrl(nickname), score: 0, isHost: true
-          });
+          AppState.players.set(AppState.me.id, { id: AppState.me.id, name: nickname, avatar: avatarUrl(nickname), score: 0, isHost: true });
 
           updateLobbyUIState();
           updatePlayerListUI();
           $('#connectionStatus').textContent = `Комната: ${roomCode} · Вы хост`;
           showToast(`Комната ${roomCode} создана!`, 'success');
-          btn.textContent = 'Создать комнату';
-          btn.disabled = false;
+          btn.textContent = 'Создать комнату'; btn.disabled = false;
         }, 100);
-
       } catch (err) {
-        console.error(err);
         showToast('Не удалось создать комнату.', 'error');
-        btn.disabled = false;
-        btn.textContent = 'Создать комнату';
+        btn.disabled = false; btn.textContent = 'Создать комнату';
       }
     }
 
@@ -1393,12 +1010,11 @@
       const nickname = $('#nicknameInput').value.trim();
       if (!nickname) { showToast('Введите никнейм', 'error'); return; }
       let code = $('#roomCodeInput').value.trim().toUpperCase();
-      if (!code) { showToast('Введите код комнаты', 'error'); return; }
+      if (!code) { showToast('Введите код', 'error'); return; }
       if (!code.startsWith('CROC-')) code = 'CROC-' + code;
 
       const btn = $('#joinRoomBtn');
-      btn.disabled = true;
-      btn.textContent = 'Подключение...';
+      btn.disabled = true; btn.textContent = 'Подключение...';
 
       try {
         AppState.isHost = false;
@@ -1410,17 +1026,13 @@
           AppState.me.avatar = avatarUrl(nickname);
           
           updateLobbyUIState();
-          $('#connectionStatus').textContent = `Комната: ${code} · Вы игрок`;
+          $('#connectionStatus').textContent = `Комната: ${code}`;
           showToast('Вы в комнате!', 'success');
-          btn.textContent = 'Войти по коду';
-          btn.disabled = false;
+          btn.textContent = 'Войти'; btn.disabled = false;
         }, 100);
-
       } catch (err) {
-        console.error(err);
-        showToast('Не удалось подключиться', 'error');
-        btn.disabled = false;
-        btn.textContent = 'Войти по коду';
+        showToast('Ошибка подключения', 'error');
+        btn.disabled = false; btn.textContent = 'Войти по коду';
       }
     }
 
@@ -1434,23 +1046,41 @@
           
           updatePlayerListUI();
           updateLobbyUIState();
+          
+          // Очищаем старый контейнер слова при смене раунда
+          if (AppState.round.number !== data.round.number) {
+            $('#wordDisplayContainer').innerHTML = '';
+          }
+          
+          Object.assign(AppState.round, data.round);
           renderGameState(data);
           break;
+
         case 'game-started':
           showScreen('game');
           $('#chatMessages').innerHTML = '';
           break;
+
         case 'secret-word':
           showHostWordUI(data.word);
           AppState.round.hintsUsed = data.hintsUsed;
           AppState.round.maxHints = data.maxHints;
           updateChangeWordButton();
           break;
-        case 'chat': appendChatMessage(data); break;
+
+        case 'chat': 
+          appendChatMessage(data); 
+          break;
+          
+        case 'system':
+          appendChatMessage(data);
+          break;
+
         case 'timer':
           AppState.round.timeLeft = data.timeLeft;
           updateTimerUI();
           break;
+
         case 'round-end':
           AppState.round.active = false;
           stopTimer();
@@ -1464,57 +1094,7 @@
             updatePlayerListUI();
           }
           break;
-        case 'rate-limit': showToast('Не так быстро!', 'error'); break;
       }
-    }
-
-    // ============================================================
-    // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ UI
-    // ============================================================
-    function copyInviteLink() {
-      const code = AppState.roomCode;
-      if (!code) return;
-      const url = `${location.origin}${location.pathname}?room=${encodeURIComponent(code)}`;
-      navigator.clipboard.writeText(url)
-        .then(() => showToast('Ссылка скопирована!', 'success'))
-        .catch(() => showToast('Не удалось скопировать', 'error'));
-    }
-
-    function pasteInviteLink() {
-      navigator.clipboard.readText().then(text => {
-        try {
-          const url = new URL(text);
-          const room = url.searchParams.get('room');
-          if (room) { $('#roomCodeInput').value = room.toUpperCase(); showToast('Код вставлен'); }
-          else showToast('В ссылке нет кода комнаты', 'error');
-        } catch (e) {
-          if (text.trim()) $('#roomCodeInput').value = text.trim().toUpperCase();
-          else showToast('Не удалось распознать ссылку', 'error');
-        }
-      }).catch(() => showToast('Нет доступа к буферу обмена', 'error'));
-    }
-
-    function initKeyboardHandling() {
-      if (!window.visualViewport) return;
-      const vv = window.visualViewport;
-      const chatBar = $('.chat-input-bar');
-      const chatMessages = $('#chatMessages');
-
-      function updateViewport() {
-        const keyboardHeight = window.innerHeight - vv.height - vv.offsetTop;
-        if (keyboardHeight > 80) {
-          chatBar.style.transform = `translateY(-${keyboardHeight}px)`;
-          if (chatMessages) chatMessages.style.paddingBottom = keyboardHeight + 'px';
-        } else {
-          chatBar.style.transform = 'translateY(0)';
-          if (chatMessages) chatMessages.style.paddingBottom = '12px';
-        }
-      }
-
-      vv.addEventListener('resize', updateViewport);
-      vv.addEventListener('scroll', updateViewport);
-      $('#chatInput').addEventListener('focus', () => setTimeout(updateViewport, 100));
-      $('#chatInput').addEventListener('blur', () => setTimeout(updateViewport, 100));
     }
 
     // ============================================================
@@ -1522,8 +1102,7 @@
     // ============================================================
     document.addEventListener('DOMContentLoaded', () => {
       initTheme();
-      confetti.init();
-
+      
       $('#themeToggle').addEventListener('click', toggleTheme);
 
       const nickInput = $('#nicknameInput');
@@ -1549,9 +1128,25 @@
       $('#categorySelect').addEventListener('change', (e) => AppState.settings.category = e.target.value);
       $('#createRoomBtn').addEventListener('click', createRoom);
       $('#joinRoomBtn').addEventListener('click', joinRoomByCode);
-      $('#pasteLinkBtn').addEventListener('click', pasteInviteLink);
-      $('#copyInviteBtn').addEventListener('click', copyInviteLink);
+      $('#pasteLinkBtn').addEventListener('click', () => {
+        navigator.clipboard.readText().then(text => {
+          try {
+            const url = new URL(text);
+            const room = url.searchParams.get('room');
+            if (room) $('#roomCodeInput').value = room.toUpperCase();
+            else if (text.trim()) $('#roomCodeInput').value = text.trim().toUpperCase();
+          } catch (e) { if (text.trim()) $('#roomCodeInput').value = text.trim().toUpperCase(); }
+        }).catch(() => showToast('Нет доступа к буферу', 'error'));
+      });
+      
+      $('#copyInviteBtn').addEventListener('click', () => {
+        if (!AppState.roomCode) return;
+        const url = `${location.origin}${location.pathname}?room=${encodeURIComponent(AppState.roomCode)}`;
+        navigator.clipboard.writeText(url).then(() => showToast('Ссылка скопирована!', 'success')).catch(() => showToast('Ошибка', 'error'));
+      });
+      
       $('#leaveLobbyBtn').addEventListener('click', leaveRoom);
+      $('#leaveGameBtn').addEventListener('click', leaveRoom);
       $('#startGameBtn').addEventListener('click', startGameHost);
 
       $('#chatSendBtn').addEventListener('click', sendChatMessage);
@@ -1568,11 +1163,9 @@
         AppState.round.wordLength = newWord.length;
         showHostWordUI(newWord);
         updateChangeWordButton();
-        broadcastState(); // Синхронизируем длину слова у всех
+        broadcastState();
         addSystemMessage('Ведущий сменил слово.');
       });
-
-      initKeyboardHandling();
 
       const params = new URLSearchParams(location.search);
       const roomFromUrl = params.get('room');
