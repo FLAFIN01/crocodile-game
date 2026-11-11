@@ -10,7 +10,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
 
-  <!-- Стили -->
   <style>
     /* ============================================================
        ДИЗАЙН-ТОКЕНЫ
@@ -222,8 +221,6 @@
       transition: transform 0.25s var(--ease-out-expo), box-shadow 0.25s var(--ease-out-expo);
     }
 
-    .card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); }
-
     .card h2 {
       font-family: var(--font-display);
       font-size: 1.3rem;
@@ -301,7 +298,6 @@
       background: var(--surface);
       font-size: 0.88rem;
       animation: chipIn 0.4s var(--ease-spring) both;
-      transition: transform 0.15s ease;
     }
 
     @keyframes chipIn {
@@ -636,7 +632,8 @@
             </div>
           </div>
 
-          <div class="card">
+          <!-- Создание комнаты -->
+          <div class="card" id="createRoomCard">
             <h2>Создать комнату</h2>
             <div class="field">
               <label>Лимит игроков</label>
@@ -667,7 +664,8 @@
             <button class="primary" id="createRoomBtn" style="width:100%;">Создать комнату</button>
           </div>
 
-          <div class="card">
+          <!-- Подключение -->
+          <div class="card" id="joinRoomCard">
             <h2>Присоединиться</h2>
             <div class="field">
               <label for="roomCodeInput">Код комнаты</label>
@@ -679,6 +677,7 @@
             </div>
           </div>
 
+          <!-- Лобби в комнате -->
           <div class="card hidden" id="lobbyPlayersCard">
             <h2>Участники <span id="playerCountLabel" style="font-size:0.8rem;color:var(--ink-muted);font-weight:400;"></span></h2>
             <div class="player-list" id="lobbyPlayerList"></div>
@@ -687,6 +686,7 @@
               <button class="ghost" id="leaveLobbyBtn" style="flex:0 0 auto;">Выйти</button>
             </div>
             <button class="primary" id="startGameBtn" style="width:100%; margin-top:10px;">Начать игру</button>
+            <p id="waitingHostText" class="hidden" style="text-align:center; font-size:0.85rem; color:var(--ink-muted); margin-top:10px;">Ожидаем, когда хост начнет игру...</p>
           </div>
 
           <div id="connectionStatus" style="text-align:center;font-size:0.8rem;color:var(--ink-muted);"></div>
@@ -732,9 +732,6 @@
   </div>
 
   <script type="module">
-    // ============================================================
-    // ИМПОРТ TRYSTERO (через CDN)
-    // ============================================================
     import { joinRoom } from 'https://cdn.skypack.dev/trystero';
 
     // ============================================================
@@ -747,8 +744,11 @@
     };
 
     // ============================================================
-    // СОСТОЯНИЕ
+    // СОСТОЯНИЕ И ПЕРЕМЕННЫЕ СЕТИ
     // ============================================================
+    let sendData = null; // Функция отправки Trystero
+    let getData = null;  // Функция приема Trystero
+
     const AppState = {
       room: null,
       isHost: false,
@@ -759,7 +759,7 @@
         timerInterval: null, active: false, guessed: false, winnerId: null
       },
       settings: { maxPlayers: 8, roundTime: 90, category: 'general' },
-      me: { id: null, name: '', avatar: '', score: 0 },
+      me: { id: null, name: '', avatar: '', score: 0, isHost: false },
       roomCode: '',
       lastMessageTime: 0,
       messageCooldown: 700
@@ -836,15 +836,10 @@
         const cy = this.canvas.height * 0.35;
         for (let i = 0; i < count; i++) {
           this.particles.push({
-            x: cx + (Math.random() - 0.5) * 200,
-            y: cy + (Math.random() - 0.5) * 80,
-            vx: (Math.random() - 0.5) * 12,
-            vy: (Math.random() - 0.8) * 14 - 4,
-            size: 4 + Math.random() * 6,
-            color: this.colors[Math.floor(Math.random() * this.colors.length)],
-            rotation: Math.random() * Math.PI * 2,
-            vr: (Math.random() - 0.5) * 0.3,
-            life: 1
+            x: cx + (Math.random() - 0.5) * 200, y: cy + (Math.random() - 0.5) * 80,
+            vx: (Math.random() - 0.5) * 12, vy: (Math.random() - 0.8) * 14 - 4,
+            size: 4 + Math.random() * 6, color: this.colors[Math.floor(Math.random() * this.colors.length)],
+            rotation: Math.random() * Math.PI * 2, vr: (Math.random() - 0.5) * 0.3, life: 1
           });
         }
         if (!this.running) { this.running = true; this.loop(); }
@@ -860,60 +855,46 @@
             alive = true;
             this.ctx.save();
             this.ctx.globalAlpha = Math.max(0, p.life);
-            this.ctx.translate(p.x, p.y);
-            this.ctx.rotate(p.rotation);
+            this.ctx.translate(p.x, p.y); this.ctx.rotate(p.rotation);
             this.ctx.fillStyle = p.color;
             this.ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size * 0.6);
             this.ctx.restore();
           }
         });
         this.particles = this.particles.filter(p => p.life > 0);
-        if (!alive) {
-          this.running = false;
-          this.canvas.classList.add('hidden');
-          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        } else {
-          requestAnimationFrame(() => this.loop());
-        }
+        if (!alive) { this.running = false; this.canvas.classList.add('hidden'); this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); }
+        else requestAnimationFrame(() => this.loop());
       }
     };
 
     // ============================================================
-    // TRYSTERO: ПОДКЛЮЧЕНИЕ
+    // СЕТЬ (TRYSTERO)
     // ============================================================
     function connectToRoom(roomCode) {
       AppState.roomCode = roomCode;
-      const room = joinRoom({ appId: 'crocodile-editorial-pop-art' }, roomCode);
+      const room = joinRoom({ appId: 'crocodile-editorial-pop-art-v3' }, roomCode);
       AppState.room = room;
+      
+      // Инициализируем канал передачи данных СТРОГО ОДИН РАЗ
+      [sendData, getData] = room.makeAction('data');
 
-      // Обработка входящих данных
-      const [sendData, getData] = room.makeAction('data');
-
-      // Обработка подключения новых пиров
       room.onPeerJoin(peerId => {
-        if (AppState.isHost) {
-          // Отправляем новому игроку приветствие и публичное состояние
-          sendData({ type: 'welcome', state: getPublicState() }, peerId);
+        console.log('Peer joined:', peerId);
+        if (!AppState.isHost) {
+          // Если я клиент, я сообщаю новому пиру (хосту), что я здесь
+          sendData({ type: 'hello', name: AppState.me.name, avatar: AppState.me.avatar }, peerId);
         }
       });
 
-      // Обработка отключения пиров
       room.onPeerLeave(peerId => {
-        if (AppState.isHost) {
-          handlePlayerDisconnect(peerId);
-        }
+        console.log('Peer left:', peerId);
+        if (AppState.isHost) handlePlayerDisconnect(peerId);
       });
 
-      // Обработка входящих сообщений
       getData((data, peerId) => {
-        if (AppState.isHost) {
-          handleClientMessage(peerId, data);
-        } else {
-          handleServerMessageToClient(data);
-        }
+        if (AppState.isHost) handleClientMessage(peerId, data);
+        else handleServerMessageToClient(data);
       });
-
-      return room;
     }
 
     // ============================================================
@@ -935,10 +916,10 @@
     }
 
     function broadcastState() {
-      if (!AppState.isHost || !AppState.room) return;
-      const sendData = AppState.room.makeAction('data')[0]; // Получаем функцию отправки
+      if (!AppState.isHost || !sendData) return;
       sendData({ type: 'state', ...getPublicState() });
-      renderGameState(getPublicState());
+      renderGameState(getPublicState()); // Обновляем свой интерфейс
+      updatePlayerListUI();
     }
 
     function sendSecretWordToHost() {
@@ -948,28 +929,41 @@
         showHostWordUI(AppState.round.secretWord);
         return;
       }
-      // Отправляем приватный пакет только ведущему
-      const sendData = AppState.room.makeAction('data')[0];
-      sendData({
-        type: 'secret-word',
-        word: AppState.round.secretWord,
-        hintsUsed: AppState.round.hintsUsed,
-        maxHints: AppState.round.maxHints
-      }, hostId);
+      if (sendData) {
+        sendData({ type: 'secret-word', word: AppState.round.secretWord, hintsUsed: AppState.round.hintsUsed, maxHints: AppState.round.maxHints }, hostId);
+      }
     }
 
     function handleClientMessage(peerId, data) {
       if (data.type === 'hello') {
         const name = (data.name || 'Игрок').slice(0, 20);
         const avatar = data.avatar || avatarUrl(name);
+        
+        // Добавляем игрока в список
         AppState.players.set(peerId, { id: peerId, name, avatar, score: 0, isHost: false });
+        
+        // Рассылаем всем обновленный список
         broadcastState();
         addSystemMessage(`${name} присоединился к игре.`);
         return;
       }
+      
       if (data.type === 'chat') {
         const text = String(data.text || '').slice(0, 140);
         if (text) handleIncomingMessage(peerId, text);
+      }
+    }
+
+    function handlePlayerDisconnect(peerId) {
+      const player = AppState.players.get(peerId);
+      if (!player) return;
+      AppState.players.delete(peerId);
+      broadcastState();
+      addSystemMessage(`${player.name} покинул игру.`);
+      if (AppState.round.hostId === peerId && AppState.round.active) endRound('timeout');
+      if (AppState.players.size < 2 && AppState.round.active) {
+        stopTimer();
+        addSystemMessage('Недостаточно игроков. Игра приостановлена.');
       }
     }
 
@@ -1012,10 +1006,7 @@
         if (!AppState.round.active) return;
         AppState.round.timeLeft = Math.max(0, AppState.round.timeLeft - 1);
         updateTimerUI();
-        if (AppState.isHost) {
-          const sendData = AppState.room.makeAction('data')[0];
-          sendData({ type: 'timer', timeLeft: AppState.round.timeLeft });
-        }
+        if (AppState.isHost && sendData) sendData({ type: 'timer', timeLeft: AppState.round.timeLeft });
         if (AppState.round.timeLeft <= 0) endRound('timeout');
       }, 1000);
     }
@@ -1046,25 +1037,18 @@
           hostPlayer.score += 50;
           systemMsg += ` Ведущий ${hostPlayer.name} получает +50.`;
         }
-        const sendData = AppState.room.makeAction('data')[0];
-        sendData({
-          type: 'round-end', secretWord: AppState.round.secretWord, winnerId: winnerId,
-          scores: [...AppState.players.values()].map(p => ({ id: p.id, score: p.score }))
-        });
+        if (sendData) sendData({ type: 'round-end', secretWord: AppState.round.secretWord, winnerId: winnerId, scores: [...AppState.players.values()].map(p => ({ id: p.id, score: p.score })) });
         showWordRevealed(AppState.round.secretWord);
         confetti.burst(160);
       } else {
         systemMsg = `⏰ Время вышло! Слово было: «${AppState.round.secretWord}».`;
-        const sendData = AppState.room.makeAction('data')[0];
-        sendData({
-          type: 'round-end', secretWord: AppState.round.secretWord, winnerId: null,
-          scores: [...AppState.players.values()].map(p => ({ id: p.id, score: p.score }))
-        });
+        if (sendData) sendData({ type: 'round-end', secretWord: AppState.round.secretWord, winnerId: null, scores: [...AppState.players.values()].map(p => ({ id: p.id, score: p.score })) });
         showWordRevealed(AppState.round.secretWord);
       }
 
       addSystemMessage(systemMsg);
       updatePlayerListUI();
+      broadcastState();
 
       setTimeout(() => { if (AppState.isHost) nextRoundHost(); }, 4000);
     }
@@ -1074,19 +1058,6 @@
       const currentIdx = playerIds.indexOf(AppState.round.hostId);
       const nextIdx = (currentIdx + 1) % playerIds.length;
       startNewRound(playerIds[nextIdx], AppState.round.number + 1);
-    }
-
-    function handlePlayerDisconnect(peerId) {
-      const player = AppState.players.get(peerId);
-      if (!player) return;
-      AppState.players.delete(peerId);
-      broadcastState();
-      addSystemMessage(`${player.name} покинул игру.`);
-      if (AppState.round.hostId === peerId && AppState.round.active) endRound('timeout');
-      if (AppState.players.size < 2 && AppState.round.active) {
-        stopTimer();
-        addSystemMessage('Недостаточно игроков. Игра приостановлена.');
-      }
     }
 
     // ============================================================
@@ -1099,8 +1070,7 @@
       const now = Date.now();
       if (peerId !== AppState.me.id) {
         if (player._lastMsg && now - player._lastMsg < AppState.messageCooldown) {
-          const sendData = AppState.room.makeAction('data')[0];
-          sendData({ type: 'rate-limit' }, peerId);
+          if (sendData) sendData({ type: 'rate-limit' }, peerId);
           return;
         }
         player._lastMsg = now;
@@ -1110,20 +1080,15 @@
 
       if (AppState.round.active && peerId !== AppState.round.hostId) {
         if (isGuessCorrect(text, AppState.round.secretWord)) {
-          addChatMessage(peerId, text, false, true);
+          appendChatMessage({ type: 'correct', text: `✅ ${player.name} угадал слово!` });
           endRound('guessed', peerId);
           return;
         }
       }
 
-      const payload = {
-        type: 'chat', peerId: peerId, name: player.name,
-        avatar: player.avatar, text: text, isHint: isHint, timestamp: now
-      };
-
-      const sendData = AppState.room.makeAction('data')[0];
-      sendData(payload);
-      if (AppState.isHost) appendChatMessage(payload);
+      const payload = { type: 'chat', peerId: peerId, name: player.name, avatar: player.avatar, text: text, isHint: isHint, timestamp: now };
+      if (sendData) sendData(payload);
+      appendChatMessage(payload);
     }
 
     function sendChatMessage() {
@@ -1141,10 +1106,9 @@
       if (AppState.isHost) {
         handleIncomingMessage(AppState.me.id, text);
       } else {
-        if (AppState.room) {
-          const sendData = AppState.room.makeAction('data')[0];
-          sendData({ type: 'chat', text: text });
-        }
+        if (sendData) sendData({ type: 'chat', text: text });
+        // Отображаем свое сообщение локально, чтобы не ждать ответа от хоста
+        appendChatMessage({ type: 'chat', peerId: AppState.me.id, name: AppState.me.name, avatar: AppState.me.avatar, text: text, isHint: false, timestamp: now });
       }
 
       input.value = '';
@@ -1156,12 +1120,10 @@
     // ============================================================
     function renderGameState(state) {
       updateTimerUI();
-      updatePlayerListUI();
-
-      const isHostRole = state.round.hostId === AppState.me.id;
+      const isRoundHost = state.round.hostId === AppState.me.id;
       const rolePill = $('#rolePill');
 
-      if (isHostRole) {
+      if (isRoundHost) {
         rolePill.textContent = 'Ведущий';
         rolePill.className = 'role-pill host';
         $('#hostControls').classList.remove('hidden');
@@ -1253,7 +1215,6 @@
         av.className = 'avatar';
         const img = document.createElement('img');
         img.src = p.avatar || avatarUrl(p.name);
-        img.alt = '';
         av.appendChild(img);
 
         const name = document.createElement('span');
@@ -1324,24 +1285,8 @@
 
     function addSystemMessage(text) {
       const msg = { type: 'system', text: text };
-      if (AppState.isHost) {
-        const sendData = AppState.room.makeAction('data')[0];
-        sendData(msg);
-      }
+      if (AppState.isHost && sendData) sendData(msg);
       appendChatMessage(msg);
-    }
-
-    function addChatMessage(peerId, text, isHint = false, isCorrect = false) {
-      if (isCorrect) {
-        const player = AppState.players.get(peerId);
-        appendChatMessage({ type: 'correct', text: `✅ ${player ? player.name : 'Игрок'} угадал слово!` });
-        return;
-      }
-      const player = AppState.players.get(peerId);
-      appendChatMessage({
-        type: 'chat', peerId, name: player?.name, avatar: player?.avatar,
-        text, isHint, timestamp: Date.now()
-      });
     }
 
     // ============================================================
@@ -1352,9 +1297,25 @@
       $('#screen-game').classList.toggle('hidden', name !== 'game');
     }
 
-    function showLobbyPlayersCard() {
-      $('#lobbyPlayersCard').classList.remove('hidden');
-      setTimeout(() => $('#lobbyPlayersCard').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    function updateLobbyUIState() {
+      if (AppState.roomCode) {
+        $('#createRoomCard').classList.add('hidden');
+        $('#joinRoomCard').classList.add('hidden');
+        $('#lobbyPlayersCard').classList.remove('hidden');
+        
+        // Показываем кнопку старта только хосту
+        if (AppState.isHost) {
+          $('#startGameBtn').classList.remove('hidden');
+          $('#waitingHostText').classList.add('hidden');
+        } else {
+          $('#startGameBtn').classList.add('hidden');
+          $('#waitingHostText').classList.remove('hidden');
+        }
+      } else {
+        $('#createRoomCard').classList.remove('hidden');
+        $('#joinRoomCard').classList.remove('hidden');
+        $('#lobbyPlayersCard').classList.add('hidden');
+      }
     }
 
     function startGameHost() {
@@ -1363,8 +1324,7 @@
       showScreen('game');
       $('#chatMessages').innerHTML = '';
       startNewRound([...AppState.players.keys()][0], 1);
-      const sendData = AppState.room.makeAction('data')[0];
-      sendData({ type: 'game-started' });
+      if (sendData) sendData({ type: 'game-started' });
     }
 
     function leaveRoom() {
@@ -1377,8 +1337,10 @@
       AppState.isHost = false;
       AppState.roomCode = '';
       AppState.me.score = 0;
+      sendData = null; 
+      getData = null;
       showScreen('lobby');
-      $('#lobbyPlayersCard').classList.add('hidden');
+      updateLobbyUIState();
       updatePlayerListUI();
       showToast('Вы вышли из комнаты');
     }
@@ -1386,7 +1348,7 @@
     // ============================================================
     // СОЗДАНИЕ И ПОДКЛЮЧЕНИЕ
     // ============================================================
-    async function createRoom() {
+    function createRoom() {
       const nickname = $('#nicknameInput').value.trim();
       if (!nickname) { showToast('Введите никнейм', 'error'); return; }
 
@@ -1396,26 +1358,32 @@
 
       try {
         AppState.isHost = true;
-        AppState.me.id = 'host_' + Math.random().toString(36).substr(2, 9);
-        AppState.me.name = nickname;
-        AppState.me.avatar = avatarUrl(nickname);
-
         const roomCode = generateRoomCode();
-        AppState.room = connectToRoom(roomCode);
+        
+        connectToRoom(roomCode);
+        
+        // Ждем микро-тик, чтобы Trystero выдал selfId
+        setTimeout(() => {
+          AppState.me.id = AppState.room.selfId;
+          AppState.me.name = nickname;
+          AppState.me.avatar = avatarUrl(nickname);
+          AppState.me.isHost = true;
+          
+          AppState.players.set(AppState.me.id, {
+            id: AppState.me.id, name: nickname, avatar: avatarUrl(nickname), score: 0, isHost: true
+          });
 
-        AppState.players.set(AppState.me.id, {
-          id: AppState.me.id, name: nickname, avatar: avatarUrl(nickname), score: 0, isHost: true
-        });
-
-        updatePlayerListUI();
-        showLobbyPlayersCard();
-        $('#connectionStatus').textContent = `Комната: ${roomCode} · Вы хост`;
-        showToast(`Комната ${roomCode} создана!`, 'success');
-        btn.textContent = 'Комната создана';
+          updateLobbyUIState();
+          updatePlayerListUI();
+          $('#connectionStatus').textContent = `Комната: ${roomCode} · Вы хост`;
+          showToast(`Комната ${roomCode} создана!`, 'success');
+          btn.textContent = 'Создать комнату';
+          btn.disabled = false;
+        }, 100);
 
       } catch (err) {
         console.error(err);
-        showToast('Не удалось создать комнату. Попробуйте ещё раз.', 'error');
+        showToast('Не удалось создать комнату.', 'error');
         btn.disabled = false;
         btn.textContent = 'Создать комнату';
       }
@@ -1434,25 +1402,19 @@
 
       try {
         AppState.isHost = false;
-        AppState.me.id = 'player_' + Math.random().toString(36).substr(2, 9);
-        AppState.me.name = nickname;
-        AppState.me.avatar = avatarUrl(nickname);
-
-        AppState.room = connectToRoom(code);
-
-        // Даем время на подключение и отправляем приветствие
+        connectToRoom(code);
+        
         setTimeout(() => {
-          if (AppState.room) {
-            const sendData = AppState.room.makeAction('data')[0];
-            sendData({ type: 'hello', name: nickname, avatar: avatarUrl(nickname) });
-          }
-        }, 1000);
-
-        showToast('Вы в комнате!', 'success');
-        showLobbyPlayersCard();
-        $('#connectionStatus').textContent = `Комната: ${code} · Вы игрок`;
-        btn.textContent = 'Подключено';
-        $('#createRoomBtn').disabled = true;
+          AppState.me.id = AppState.room.selfId;
+          AppState.me.name = nickname;
+          AppState.me.avatar = avatarUrl(nickname);
+          
+          updateLobbyUIState();
+          $('#connectionStatus').textContent = `Комната: ${code} · Вы игрок`;
+          showToast('Вы в комнате!', 'success');
+          btn.textContent = 'Войти по коду';
+          btn.disabled = false;
+        }, 100);
 
       } catch (err) {
         console.error(err);
@@ -1464,20 +1426,14 @@
 
     function handleServerMessageToClient(data) {
       switch (data.type) {
-        case 'welcome':
-          AppState.players.clear();
-          data.state.players.forEach(p => AppState.players.set(p.id, p));
-          AppState.settings = { ...data.state.settings };
-          AppState.roomCode = data.state.roomCode;
-          updatePlayerListUI();
-          showLobbyPlayersCard();
-          break;
         case 'state':
           AppState.players.clear();
           data.players.forEach(p => AppState.players.set(p.id, p));
           AppState.settings = { ...data.settings };
-          Object.assign(AppState.round, data.round);
+          if (!AppState.roomCode) AppState.roomCode = data.roomCode;
+          
           updatePlayerListUI();
+          updateLobbyUIState();
           renderGameState(data);
           break;
         case 'game-started':
@@ -1612,7 +1568,7 @@
         AppState.round.wordLength = newWord.length;
         showHostWordUI(newWord);
         updateChangeWordButton();
-        broadcastState();
+        broadcastState(); // Синхронизируем длину слова у всех
         addSystemMessage('Ведущий сменил слово.');
       });
 
