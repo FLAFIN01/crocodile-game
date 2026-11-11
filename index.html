@@ -5,25 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
   <title>КРОКОДИЛ · Онлайн-игра</title>
   
+  <!-- Шрифты -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
 
   <style>
     /* ============================================================
-       ДИЗАЙН-СИСТЕМА (СОВРЕМЕННЫЙ PREMIUM UI)
+       ДИЗАЙН-СИСТЕМА (PREMIUM UI)
        ============================================================ */
     :root {
       --font-display: 'Unbounded', sans-serif;
       --font-ui: 'Inter', system-ui, sans-serif;
       
-      --bg: #0f1115;
-      --surface: #1a1d24;
-      --surface-hover: #22262f;
-      --border: #2e3340;
+      --bg: #0b0f19;
+      --surface: #151b2b;
+      --surface-hover: #1f293d;
+      --border: #2a3652;
       
-      --text-main: #f0f2f5;
-      --text-muted: #8b92a5;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
       
       --primary: #6366f1;
       --primary-hover: #4f46e5;
@@ -31,9 +32,9 @@
       --success: #10b981;
       --warning: #f59e0b;
       
-      --shadow-sm: 0 2px 4px rgba(0,0,0,0.2);
-      --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
-      --shadow-lg: 0 12px 32px rgba(0,0,0,0.4);
+      --shadow-sm: 0 2px 4px rgba(0,0,0,0.3);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+      --shadow-lg: 0 12px 32px rgba(0,0,0,0.5);
       
       --radius-sm: 8px;
       --radius-md: 16px;
@@ -45,14 +46,15 @@
 
     /* Светлая тема */
     [data-theme="light"] {
-      --bg: #f8fafc;
+      --bg: #f1f5f9;
       --surface: #ffffff;
-      --surface-hover: #f1f5f9;
-      --border: #e2e8f0;
+      --surface-hover: #e2e8f0;
+      --border: #cbd5e1;
       --text-main: #0f172a;
-      --text-muted: #64748b;
-      --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
-      --shadow-lg: 0 12px 32px rgba(0,0,0,0.1);
+      --text-muted: #475569;
+      --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+      --shadow-lg: 0 12px 32px rgba(0,0,0,0.15);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -75,20 +77,9 @@
 
     /* Кнопки */
     button {
-      font-family: inherit;
-      cursor: pointer;
-      border: none;
-      outline: none;
-      border-radius: var(--radius-sm);
-      padding: 12px 20px;
-      font-weight: 600;
-      font-size: 0.95rem;
-      transition: all 0.2s var(--ease-out);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      min-height: 48px;
+      font-family: inherit; cursor: pointer; border: none; outline: none;
+      border-radius: var(--radius-sm); padding: 12px 20px; font-weight: 600; font-size: 0.95rem;
+      transition: all 0.2s var(--ease-out); display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px;
     }
     button:active { transform: scale(0.97); }
     button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
@@ -103,17 +94,10 @@
 
     /* Инпуты */
     input, select {
-      font-family: inherit;
-      font-size: 1rem;
-      padding: 12px 16px;
-      border: 2px solid var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--surface);
-      color: var(--text-main);
-      outline: none;
-      width: 100%;
-      min-height: 48px;
-      transition: border-color 0.2s ease;
+      font-family: inherit; font-size: 1rem; padding: 12px 16px;
+      border: 2px solid var(--border); border-radius: var(--radius-sm);
+      background: var(--surface); color: var(--text-main); outline: none;
+      width: 100%; min-height: 48px; transition: border-color 0.2s ease;
     }
     input:focus, select:focus { border-color: var(--primary); }
 
@@ -126,10 +110,7 @@
     .logo { font-family: var(--font-display); font-weight: 900; font-size: 1.4rem; letter-spacing: -0.5px; }
     .logo span { color: var(--accent); }
     .header-actions { display: flex; gap: 8px; }
-    .icon-btn {
-      width: 44px; height: 44px; padding: 0; border-radius: 50%;
-      background: var(--surface-hover); color: var(--text-main);
-    }
+    .icon-btn { width: 44px; height: 44px; padding: 0; border-radius: 50%; background: var(--surface-hover); color: var(--text-main); font-size: 1.2rem; }
 
     /* Экраны */
     .screen { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
@@ -164,9 +145,7 @@
     .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
 
     .segmented { display: flex; background: var(--surface-hover); border-radius: var(--radius-sm); padding: 4px; }
-    .segmented button {
-      flex: 1; background: transparent; color: var(--text-muted); padding: 8px; min-height: 40px; border-radius: 6px; font-size: 0.85rem;
-    }
+    .segmented button { flex: 1; background: transparent; color: var(--text-muted); padding: 8px; min-height: 40px; border-radius: 6px; font-size: 0.85rem; }
     .segmented button.active { background: var(--surface); color: var(--text-main); box-shadow: var(--shadow-sm); }
 
     .player-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
@@ -210,6 +189,7 @@
     .word-zone {
       background: var(--surface); padding: 24px 20px; text-align: center;
       border-bottom: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 200px;
     }
     .word-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px; }
     
@@ -245,8 +225,7 @@
       max-width: 85%; padding: 12px 16px; border-radius: var(--radius-md);
       background: var(--surface); border: 1px solid var(--border);
       font-size: 0.95rem; line-height: 1.4; word-break: break-word;
-      animation: slideIn 0.3s var(--ease-out);
-      align-self: flex-start;
+      animation: slideIn 0.3s var(--ease-out); align-self: flex-start;
     }
     @keyframes slideIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     
@@ -458,14 +437,30 @@
     </div>
 
     <div class="toast-container" id="toastContainer"></div>
-    <canvas id="confetti"></canvas>
+    <canvas id="confetti-canvas"></canvas>
   </div>
 
+  <!-- ГЛОБАЛЬНЫЙ ПЕРЕХВАТЧИК ОШИБОК -->
+  <script>
+    window.addEventListener('error', function(e) {
+      const container = document.getElementById('toastContainer');
+      if (container) {
+        const el = document.createElement('div');
+        el.className = 'toast error';
+        el.textContent = 'Ошибка: ' + e.message;
+        el.style.pointerEvents = 'auto';
+        container.appendChild(el);
+      }
+      console.error("GLOBAL ERROR:", e);
+    });
+  </script>
+
+  <!-- ОСНОВНОЙ СКРИПТ -->
   <script type="module">
-    import { joinRoom } from 'https://cdn.skypack.dev/trystero';
+    import { joinRoom } from 'https://esm.sh/trystero';
 
     // ============================================================
-    // СЛОВАРЬ (Встроенный)
+    // СЛОВАРЬ
     // ============================================================
     const WORDS = {
       general: ['крокодил','радуга','библиотека','вертолёт','подснежник','аквариум','балерина','велосипед','гитара','динозавр','ёжик','жонглёр','зонтик','избушка','карусель','ленивец','магнит','нарцисс','облако','пингвин','ракета','самовар','телескоп','улитка','фонарь','художник','циркуль','часы','шоколад','щетка','экскаватор','юла','якорь','апельсин','бабочка','вулкан','глобус','дельфин','ежевика','жираф','зеркало','иллюзия','кактус','ледокол','мельница','ножницы','остров','паровоз','ромашка','светлячок','трамвай','улыбка','фейерверк','холодильник','цветок','чучело','шахматы','эскимо','яблоко','аккордеон','балкон','виноград','гамак','дождь','ёлка','журавль','замок','игрушка','календарь','лампа','медведь','нора','осень','подушка','ракушка','снегирь','туча','учёный','флейта','хлеб','цапля','черёмуха','шарик','эхо','ящерица'],
@@ -474,7 +469,7 @@
     };
 
     // ============================================================
-    // СОСТОЯНИЕ ПРИЛОЖЕНИЯ
+    // СОСТОЯНИЕ
     // ============================================================
     let sendData = null;
     let getData = null;
@@ -485,27 +480,11 @@
       myId: null,
       myName: '',
       roomCode: '',
-      
-      players: new Map(), // id -> { id, name, avatar, score, isHost }
-      
-      settings: {
-        maxPlayers: 8,
-        roundTime: 90,
-        category: 'general'
-      },
-      
-      round: {
-        number: 1,
-        explainerId: null,
-        wordLength: 0,
-        timeLeft: 90,
-        isActive: false
-      },
-      
-      // Только для хоста комнаты (сервера)
+      players: new Map(),
+      settings: { maxPlayers: 8, roundTime: 90, category: 'general' },
+      round: { number: 1, explainerId: null, wordLength: 0, timeLeft: 90, isActive: false },
       _secretWord: '',
       _timer: null,
-      
       lastMsgTime: 0,
       msgCooldown: 700
     };
@@ -518,6 +497,7 @@
     
     function toast(msg, type = '') {
       const container = $('#toastContainer');
+      if (!container) return;
       const el = document.createElement('div');
       el.className = `toast ${type}`;
       el.textContent = msg;
@@ -534,43 +514,24 @@
     }
 
     // ============================================================
-    // UI: ТЕМА И МОДАЛКИ
-    // ============================================================
-    function initTheme() {
-      const saved = localStorage.getItem('croc_theme') || 'dark';
-      document.body.dataset.theme = saved;
-      $('#themeBtn').textContent = saved === 'dark' ? '☀' : '◐';
-    }
-
-    $('#themeBtn').addEventListener('click', () => {
-      const next = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
-      document.body.dataset.theme = next;
-      localStorage.setItem('croc_theme', next);
-      $('#themeBtn').textContent = next === 'dark' ? '☀' : '◐';
-    });
-
-    $('#rulesBtn').addEventListener('click', () => $('#rulesModal').classList.add('active'));
-    $('#closeRulesBtn').addEventListener('click', () => $('#rulesModal').classList.remove('active'));
-    $('#rulesModal').addEventListener('click', (e) => {
-      if (e.target.id === 'rulesModal') e.target.classList.remove('active');
-    });
-
-    // ============================================================
     // КОНФЕТТИ
     // ============================================================
-    const canvas = $('#confetti');
-    const ctx = canvas.getContext('2d');
+    const canvas = $('#confetti-canvas');
+    const ctx = canvas ? canvas.getContext('2d') : null;
     let particles = [];
     let confettiActive = false;
 
     function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
     }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
     function fireConfetti() {
+      if (!ctx) return;
       for (let i = 0; i < 150; i++) {
         particles.push({
           x: canvas.width / 2 + (Math.random() - 0.5) * 200,
@@ -591,6 +552,7 @@
     }
 
     function updateConfetti() {
+      if (!ctx) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       let alive = false;
       particles.forEach(p => {
@@ -616,15 +578,17 @@
     // ============================================================
     function initNetwork(roomId) {
       App.roomCode = roomId;
-      App.room = joinRoom({ appId: 'crocodile_online_v5' }, roomId);
+      App.room = joinRoom({ appId: 'crocodile_online_v6' }, roomId);
       
       [sendData, getData] = App.room.makeAction('data');
 
+      // Когда кто-то подключается к комнате
       App.room.onPeerJoin(peerId => {
         console.log('Peer joined:', peerId);
+        // Если я клиент, я должен представиться хосту.
+        // Отправляю broadcast 'hello', хост его поймает и добавит меня.
         if (!App.isHost) {
-          // Я клиент, отправил приветствие хосту
-          sendData({ type: 'hello', name: App.myName, avatar: getAvatarUrl(App.myName) }, peerId);
+          sendData({ type: 'hello', name: App.myName, avatar: getAvatarUrl(App.myName) });
         }
       });
 
@@ -633,8 +597,9 @@
         if (App.isHost) handlePlayerLeave(peerId);
       });
 
-      getData((data) => {
-        if (App.isHost) handleClientData(data);
+      // Прием данных
+      getData((data, peerId) => {
+        if (App.isHost) handleClientData(peerId, data);
         else handleHostData(data);
       });
     }
@@ -642,29 +607,23 @@
     // ============================================================
     // ЛОГИКА ХОСТА (СЕРВЕРА)
     // ============================================================
-    function handleClientData(data) {
+    function handleClientData(peerId, data) {
+      // Клиент представился
       if (data.type === 'hello') {
-        if (App.players.size >= App.settings.maxPlayers) return; // Лимит
-        
-        const newPlayer = { id: data.peerId || App.room.getPeers().find(p => !App.players.has(p)), name: data.name, avatar: data.avatar, score: 0, isHost: false };
-        // В Trystero peerId приходит вторым аргументом в getData, но мы его не передали в handleClientData. Исправим:
+        if (App.players.size >= App.settings.maxPlayers) {
+          sendData({ type: 'error', msg: 'Комната заполнена' }, peerId);
+          return;
+        }
+        // Добавляем игрока
+        App.players.set(peerId, { id: peerId, name: data.name, avatar: data.avatar, score: 0, isHost: false });
+        broadcastState();
+        addSystemMsg(`${data.name} присоединился к игре.`);
       }
-    }
-    
-    // Переписываем правильный обработчик данных Хоста
-    function setupHostReceiver() {
-      getData((data, peerId) => {
-        if (data.type === 'hello') {
-          if (App.players.size >= App.settings.maxPlayers) return;
-          App.players.set(peerId, { id: peerId, name: data.name, avatar: data.avatar, score: 0, isHost: false });
-          broadcastState();
-          addSystemMsg(`${data.name} присоединился к игре.`);
-        }
-        
-        if (data.type === 'chat') {
-          handleIncomingChat(peerId, data.text);
-        }
-      });
+      
+      // Клиент пишет в чат
+      if (data.type === 'chat') {
+        handleIncomingChat(peerId, data.text);
+      }
     }
 
     function broadcastState() {
@@ -687,11 +646,15 @@
     }
 
     function startGame() {
-      if (!App.isHost || App.players.size < 2) return;
+      if (!App.isHost || App.players.size < 2) {
+        return toast('Нужно хотя бы 2 игрока', 'error');
+      }
       
       // Сброс очков
       App.players.forEach(p => p.score = 0);
       App.round.number = 1;
+      App.round.explainerId = null; // Сброс, чтобы начать с первого
+      
       $('#screen-lobby').classList.add('hidden');
       $('#screen-game').classList.remove('hidden');
       $('#chatMessages').innerHTML = '';
@@ -749,30 +712,22 @@
       const player = App.players.get(peerId);
       if (!player) return;
 
-      // Антиспам
       const now = Date.now();
       if (peerId !== App.myId) {
         if (player._lastMsg && now - player._lastMsg < App.msgCooldown) return;
         player._lastMsg = now;
       }
 
-      // Проверка на угадывание (только если раунд активен и пишет не ведущий)
+      // Проверка на угадывание
       if (App.round.isActive && peerId !== App.round.explainerId) {
         if (normalize(text) === normalize(App._secretWord)) {
           endRound('guessed', peerId);
-          return; // Сообщение не отправляем как обычный чат
+          return;
         }
       }
 
       const isHint = peerId === App.round.explainerId;
-      
-      const payload = {
-        type: 'chat',
-        id: peerId,
-        name: player.name,
-        text: text,
-        isHint: isHint
-      };
+      const payload = { type: 'chat', id: peerId, name: player.name, text: text, isHint: isHint };
       
       sendData(payload);
       appendChatMsg(payload);
@@ -808,11 +763,9 @@
 
       addSystemMsg(sysText);
       
-      // Обновляем стейт
       App.round.number++;
       broadcastState();
 
-      // Ждем 5 секунд и начинаем новый раунд
       setTimeout(() => {
         if (App.isHost) startRound();
       }, 5000);
@@ -843,7 +796,6 @@
           
           renderState(data.state);
           
-          // Если сменился экран
           if (!$('#screen-game').classList.contains('hidden') || $('#chatMessages').children.length > 0) {
              $('#screen-lobby').classList.add('hidden');
              $('#screen-game').classList.remove('hidden');
@@ -871,11 +823,14 @@
         case 'round-end':
           revealWordUI(data.word);
           if (data.winner === App.myName) fireConfetti();
-          // Обновляем очки
           data.scores.forEach(s => {
             const p = App.players.get(s.id);
             if (p) p.score = s.score;
           });
+          break;
+          
+        case 'error':
+          toast(data.msg, 'error');
           break;
       }
     }
@@ -884,10 +839,8 @@
     // РЕНДЕР (UI)
     // ============================================================
     function renderState(state) {
-      // 1. Обновляем список игроков в лобби
       updateLobbyList();
       
-      // 2. Обновляем шапку игры
       const isExplainer = state.round.explainerId === App.myId;
       
       $('#roundLabel').textContent = `Раунд ${state.round.number}`;
@@ -904,7 +857,6 @@
         $('#wordLabel').textContent = 'Загаданное слово';
         $('#gameHint').innerHTML = 'Читайте намеки ведущего и пишите догадки в чат.';
         
-        // Если раунд активен, а мы не ведущий - показываем пустые квадраты
         if (state.round.isActive && !$('#wordContainer').querySelector('.secret-word-display')) {
            renderEmptyBoxes(state.round.wordLength);
         }
@@ -913,6 +865,7 @@
 
     function updateLobbyList() {
       const list = $('#playerList');
+      if (!list) return;
       list.innerHTML = '';
       $('#playerCount').textContent = `(${App.players.size}/${App.settings.maxPlayers})`;
       
@@ -947,11 +900,12 @@
 
     function showWordUI(word) {
       const c = $('#wordContainer');
-      c.innerHTML = `<div class="secret-word-display">${word}</div>`;
+      if (c) c.innerHTML = `<div class="secret-word-display">${word}</div>`;
     }
 
     function renderEmptyBoxes(len) {
       const c = $('#wordContainer');
+      if (!c) return;
       c.innerHTML = '';
       const container = document.createElement('div');
       container.className = 'letter-boxes';
@@ -965,6 +919,7 @@
 
     function revealWordUI(word) {
       const c = $('#wordContainer');
+      if (!c) return;
       c.innerHTML = '';
       const container = document.createElement('div');
       container.className = 'letter-boxes';
@@ -981,6 +936,7 @@
 
     function updateTimerUI(time) {
       const t = $('#timerDisplay');
+      if (!t) return;
       t.textContent = time;
       if (time <= 10) t.classList.add('warning');
       else t.classList.remove('warning');
@@ -988,6 +944,7 @@
 
     function appendChatMsg(msg) {
       const c = $('#chatMessages');
+      if (!c) return;
       const el = document.createElement('div');
       el.className = 'msg';
 
@@ -1021,114 +978,168 @@
 
     function addSystemMsg(text) {
       const payload = { type: 'system', text: text };
-      if (App.isHost) sendData(payload);
+      if (App.isHost && sendData) sendData(payload);
       appendChatMsg(payload);
     }
 
     // ============================================================
-    // ИНИЦИАЛИЗАЦИЯ И КНОПКИ
+    // ИНИЦИАЛИЗАЦИЯ
     // ============================================================
-    document.addEventListener('DOMContentLoaded', () => {
-      initTheme();
+    function init() {
+      // 1. Тема
+      const savedTheme = localStorage.getItem('croc_theme') || 'dark';
+      document.body.dataset.theme = savedTheme;
+      const themeBtn = $('#themeBtn');
+      if (themeBtn) themeBtn.textContent = savedTheme === 'dark' ? '☀' : '◐';
 
-      // Профиль
+      if (themeBtn) {
+        themeBtn.addEventListener('click', () => {
+          const next = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+          document.body.dataset.theme = next;
+          localStorage.setItem('croc_theme', next);
+          themeBtn.textContent = next === 'dark' ? '☀' : '◐';
+        });
+      }
+
+      // 2. Правила
+      const rulesBtn = $('#rulesBtn');
+      const rulesModal = $('#rulesModal');
+      if (rulesBtn && rulesModal) {
+        rulesBtn.addEventListener('click', () => rulesModal.classList.add('active'));
+        $('#closeRulesBtn').addEventListener('click', () => rulesModal.classList.remove('active'));
+        rulesModal.addEventListener('click', (e) => {
+          if (e.target.id === 'rulesModal') rulesModal.classList.remove('active');
+        });
+      }
+
+      // 3. Профиль
       const nickInput = $('#nicknameInput');
-      nickInput.value = 'Игрок' + Math.floor(100 + Math.random() * 900);
-      const updateAv = () => $('#avatarPreview').innerHTML = `<img src="${getAvatarUrl(nickInput.value)}">`;
-      nickInput.addEventListener('input', updateAv);
-      updateAv();
+      if (nickInput) {
+        nickInput.value = 'Игрок' + Math.floor(100 + Math.random() * 900);
+        const updateAv = () => {
+          const av = $('#avatarPreview');
+          if (av) av.innerHTML = `<img src="${getAvatarUrl(nickInput.value)}">`;
+        };
+        nickInput.addEventListener('input', updateAv);
+        updateAv();
+      }
 
-      // Настройки
-      $('#maxPlayersSeg').addEventListener('click', e => {
-        if (e.target.tagName !== 'BUTTON') return;
-        $$('#maxPlayersSeg button').forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
-        App.settings.maxPlayers = parseInt(e.target.dataset.val);
-      });
+      // 4. Настройки
+      const maxPlayersSeg = $('#maxPlayersSeg');
+      if (maxPlayersSeg) {
+        maxPlayersSeg.addEventListener('click', e => {
+          if (e.target.tagName !== 'BUTTON') return;
+          $$('#maxPlayersSeg button').forEach(b => b.classList.remove('active'));
+          e.target.classList.add('active');
+          App.settings.maxPlayers = parseInt(e.target.dataset.val);
+        });
+      }
 
-      $('#roundTimeSeg').addEventListener('click', e => {
-        if (e.target.tagName !== 'BUTTON') return;
-        $$('#roundTimeSeg button').forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
-        App.settings.roundTime = parseInt(e.target.dataset.val);
-      });
+      const roundTimeSeg = $('#roundTimeSeg');
+      if (roundTimeSeg) {
+        roundTimeSeg.addEventListener('click', e => {
+          if (e.target.tagName !== 'BUTTON') return;
+          $$('#roundTimeSeg button').forEach(b => b.classList.remove('active'));
+          e.target.classList.add('active');
+          App.settings.roundTime = parseInt(e.target.dataset.val);
+        });
+      }
 
-      $('#categorySelect').addEventListener('change', e => {
-        App.settings.category = e.target.value;
-      });
+      const categorySelect = $('#categorySelect');
+      if (categorySelect) {
+        categorySelect.addEventListener('change', e => {
+          App.settings.category = e.target.value;
+        });
+      }
 
-      // Создание комнаты
-      $('#createRoomBtn').addEventListener('click', () => {
-        const name = nickInput.value.trim();
-        if (!name) return toast('Введите имя', 'error');
-        
-        App.isHost = true;
-        App.myName = name;
-        
-        // Генерируем ID комнаты
-        const roomCode = 'CROC-' + Math.floor(1000 + Math.random() * 9000);
-        
-        initNetwork(roomCode);
-        setupHostReceiver(); // Важно: перезаписываем слушатель для хоста
-        
-        setTimeout(() => {
-          App.myId = App.room.selfId;
-          App.players.set(App.myId, { id: App.myId, name: App.myName, avatar: getAvatarUrl(App.myName), score: 0, isHost: true });
+      // 5. Создание / Вход
+      const createRoomBtn = $('#createRoomBtn');
+      if (createRoomBtn) {
+        createRoomBtn.addEventListener('click', () => {
+          const name = $('#nicknameInput').value.trim();
+          if (!name) return toast('Введите имя', 'error');
           
-          $('#lobbyControls').classList.add('hidden');
-          $('#roomLobby').classList.remove('hidden');
-          $('#startGameBtn').classList.remove('hidden');
-          $('#waitingText').classList.add('hidden');
+          App.isHost = true;
+          App.myName = name;
+          const roomCode = 'CROC-' + Math.floor(1000 + Math.random() * 9000);
           
-          renderState({ round: App.round, settings: App.settings });
-          broadcastState();
-          toast('Комната создана!', 'success');
-        }, 100);
-      });
+          try {
+            initNetwork(roomCode);
+            
+            setTimeout(() => {
+              App.myId = App.room.selfId;
+              App.players.set(App.myId, { id: App.myId, name: App.myName, avatar: getAvatarUrl(App.myName), score: 0, isHost: true });
+              
+              $('#lobbyControls').classList.add('hidden');
+              $('#roomLobby').classList.remove('hidden');
+              $('#startGameBtn').classList.remove('hidden');
+              $('#waitingText').classList.add('hidden');
+              
+              renderState({ round: App.round, settings: App.settings });
+              broadcastState();
+              toast('Комната создана!', 'success');
+            }, 300);
+          } catch (err) {
+            toast('Ошибка создания сети', 'error');
+            console.error(err);
+          }
+        });
+      }
 
-      // Вход по коду
-      $('#joinRoomBtn').addEventListener('click', () => {
-        const name = nickInput.value.trim();
-        let code = $('#joinCodeInput').value.trim().toUpperCase();
-        if (!name) return toast('Введите имя', 'error');
-        if (!code) return toast('Введите код', 'error');
-        if (!code.startsWith('CROC-')) code = 'CROC-' + code;
-        
-        App.isHost = false;
-        App.myName = name;
-        
-        initNetwork(code);
-        
-        setTimeout(() => {
-          App.myId = App.room.selfId;
+      const joinRoomBtn = $('#joinRoomBtn');
+      if (joinRoomBtn) {
+        joinRoomBtn.addEventListener('click', () => {
+          const name = $('#nicknameInput').value.trim();
+          let code = $('#joinCodeInput').value.trim().toUpperCase();
+          if (!name) return toast('Введите имя', 'error');
+          if (!code) return toast('Введите код', 'error');
+          if (!code.startsWith('CROC-')) code = 'CROC-' + code;
           
-          $('#lobbyControls').classList.add('hidden');
-          $('#roomLobby').classList.remove('hidden');
-          $('#startGameBtn').classList.add('hidden');
-          $('#waitingText').classList.remove('hidden');
+          App.isHost = false;
+          App.myName = name;
           
-          toast('Вы в комнате!', 'success');
-        }, 100);
-      });
+          try {
+            initNetwork(code);
+            
+            setTimeout(() => {
+              App.myId = App.room.selfId;
+              $('#lobbyControls').classList.add('hidden');
+              $('#roomLobby').classList.remove('hidden');
+              $('#startGameBtn').classList.add('hidden');
+              $('#waitingText').classList.remove('hidden');
+              toast('Вы в комнате!', 'success');
+            }, 300);
+          } catch (err) {
+            toast('Ошибка подключения', 'error');
+            console.error(err);
+          }
+        });
+      }
 
-      // Копирование ссылки
-      $('#copyInviteBtn').addEventListener('click', () => {
-        const url = `${location.origin}${location.pathname}?room=${App.roomCode}`;
-        navigator.clipboard.writeText(url).then(() => toast('Ссылка скопирована!', 'success'));
-      });
+      // 6. Кнопки в комнате
+      const copyInviteBtn = $('#copyInviteBtn');
+      if (copyInviteBtn) {
+        copyInviteBtn.addEventListener('click', () => {
+          const url = `${location.origin}${location.pathname}?room=${App.roomCode}`;
+          navigator.clipboard.writeText(url).then(() => toast('Ссылка скопирована!', 'success'));
+        });
+      }
 
-      // Выход
       const leaveRoom = () => {
         if (App.room) App.room.leave();
-        location.reload(); // Самый надежный способ сбросить состояние
+        location.reload();
       };
-      $('#leaveRoomBtn').addEventListener('click', leaveRoom);
-      $('#leaveGameBtn').addEventListener('click', leaveRoom);
+      
+      const leaveRoomBtn = $('#leaveRoomBtn');
+      if (leaveRoomBtn) leaveRoomBtn.addEventListener('click', leaveRoom);
+      
+      const leaveGameBtn = $('#leaveGameBtn');
+      if (leaveGameBtn) leaveGameBtn.addEventListener('click', leaveRoom);
 
-      // Старт игры
-      $('#startGameBtn').addEventListener('click', startGame);
+      const startGameBtn = $('#startGameBtn');
+      if (startGameBtn) startGameBtn.addEventListener('click', startGame);
 
-      // Чат
+      // 7. Чат
       const sendChat = () => {
         const input = $('#chatInput');
         const text = input.value.trim();
@@ -1142,40 +1153,55 @@
           handleIncomingChat(App.myId, text);
         } else {
           sendData({ type: 'chat', text: text });
-          // Себя показываем сразу
           appendChatMsg({ id: App.myId, name: App.myName, text: text, isHint: false });
         }
         input.value = '';
       };
 
-      $('#sendBtn').addEventListener('click', sendChat);
-      $('#chatInput').addEventListener('keydown', e => {
-        if (e.key === 'Enter') sendChat();
-      });
+      const sendBtn = $('#sendBtn');
+      if (sendBtn) sendBtn.addEventListener('click', sendChat);
+      
+      const chatInput = $('#chatInput');
+      if (chatInput) {
+        chatInput.addEventListener('keydown', e => {
+          if (e.key === 'Enter') sendChat();
+        });
+      }
 
-      // Мобильная клавиатура (фикс)
+      // 8. Мобильная клавиатура
       if (window.visualViewport) {
         const vv = window.visualViewport;
         vv.addEventListener('resize', () => {
           const isKeyboardOpen = window.innerHeight - vv.height > 100;
           const inputArea = $('.chat-input-area');
-          if (isKeyboardOpen) {
-            inputArea.style.transform = `translateY(-${window.innerHeight - vv.height - vv.offsetTop}px)`;
-            $('#chatMessages').style.paddingBottom = (window.innerHeight - vv.height) + 'px';
-          } else {
-            inputArea.style.transform = 'none';
-            $('#chatMessages').style.paddingBottom = '20px';
+          const chatMessages = $('#chatMessages');
+          if (inputArea && chatMessages) {
+            if (isKeyboardOpen) {
+              inputArea.style.transform = `translateY(-${window.innerHeight - vv.height - vv.offsetTop}px)`;
+              chatMessages.style.paddingBottom = (window.innerHeight - vv.height) + 'px';
+            } else {
+              inputArea.style.transform = 'none';
+              chatMessages.style.paddingBottom = '20px';
+            }
           }
         });
       }
 
-      // Проверка URL на ?room=
+      // 9. Проверка URL на ?room=
       const params = new URLSearchParams(location.search);
       if (params.get('room')) {
-        $('#joinCodeInput').value = params.get('room').toUpperCase();
+        const codeInput = $('#joinCodeInput');
+        if (codeInput) codeInput.value = params.get('room').toUpperCase();
         toast('Код комнаты подставлен!');
       }
-    });
+    }
+
+    // Запускаем инициализацию только когда DOM полностью загружен
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
 
   </script>
 </body>
