@@ -2,401 +2,409 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-  <title>Крокодил | Онлайн-игра</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Игра в ассоциации</title>
   
-  <!-- Шрифты -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
-  <!-- MQTT Библиотека -->
   <script src="https://cdn.jsdelivr.net/npm/mqtt@5.3.5/dist/mqtt.min.js"></script>
 
   <style>
-    /* ============================================================
-       ДИЗАЙН-СИСТЕМА
-       ============================================================ */
+    /* --- Переменные --- */
     :root {
       --font-main: 'Nunito', system-ui, sans-serif;
-      
-      /* Светлая тема (по умолчанию) */
       --bg-body: #f0f4f8;
       --bg-panel: #ffffff;
       --bg-panel-hover: #f8fafc;
-      
       --text-main: #1e293b;
       --text-muted: #64748b;
-      
-      --primary: #10b981; /* Зеленый */
+      --primary: #10b981;
       --primary-hover: #059669;
       --primary-light: #d1fae5;
-      
-      --secondary: #3b82f6; /* Синий */
+      --secondary: #3b82f6;
       --danger: #ef4444;
       --warning: #f59e0b;
-      
       --border: #e2e8f0;
-      --shadow-panel: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      --shadow-panel: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
       --radius-lg: 24px;
       --radius-md: 16px;
       --radius-sm: 12px;
     }
 
-    /* Темная тема */
     [data-theme="dark"] {
       --bg-body: #0f172a;
       --bg-panel: #1e293b;
       --bg-panel-hover: #334155;
-      
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
-      
-      --primary: #10b981;
-      --primary-hover: #34d399;
       --primary-light: rgba(16, 185, 129, 0.15);
-      
       --border: #334155;
       --shadow-panel: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
+    /* --- Базовые стили (Desktop Only) --- */
+    * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
     body {
       font-family: var(--font-main);
       background: var(--bg-body);
       color: var(--text-main);
-      height: 100dvh;
+      height: 100vh;
+      min-width: 1024px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
       transition: background 0.3s ease, color 0.3s ease;
     }
 
-    /* Утилиты */
+    /* --- Утилиты --- */
     .hidden { display: none !important; }
     button {
-      font-family: inherit; cursor: pointer; border: none; outline: none;
-      font-weight: 800; font-size: 1rem; border-radius: var(--radius-sm);
-      transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center;
-      min-height: 48px; padding: 0 24px;
+      font-family: inherit; cursor: pointer; border: none; font-weight: 800;
+      border-radius: var(--radius-sm); transition: all 0.2s ease;
+      display: inline-flex; align-items: center; justify-content: center; padding: 0 24px; height: 48px;
     }
-    button:active { transform: scale(0.97); }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button:hover:not(:disabled) { transform: translateY(-2px); }
+    button:active:not(:disabled) { transform: translateY(1px) scale(0.98); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
     
-    .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2); }
+    .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
     .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
     .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text-main); }
     .btn-outline:hover:not(:disabled) { background: var(--bg-panel-hover); }
     
-    input, select {
+    input {
       font-family: inherit; font-size: 1rem; font-weight: 600;
-      padding: 14px 16px; border: 2px solid var(--border); border-radius: var(--radius-sm);
-      background: var(--bg-panel); color: var(--text-main); outline: none;
-      width: 100%; min-height: 52px; transition: border-color 0.2s ease;
+      padding: 12px 16px; border: 2px solid var(--border); border-radius: var(--radius-sm);
+      background: var(--bg-panel); color: var(--text-main); width: 100%; height: 52px; transition: border-color 0.2s ease;
     }
-    input:focus, select:focus { border-color: var(--primary); }
+    input:focus { border-color: var(--primary); }
 
-    /* Верхняя панель */
+    /* --- Шапка --- */
     .topbar {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 24px; flex-shrink: 0;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 32px; background: var(--bg-panel); border-bottom: 1px solid var(--border); z-index: 10;
     }
-    .logo { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px; }
-    .logo span { color: var(--primary); }
-    .topbar-actions { display: flex; gap: 12px; }
-    .icon-btn { width: 44px; height: 44px; padding: 0; border-radius: 50%; background: var(--bg-panel); color: var(--text-main); box-shadow: var(--shadow-panel); }
-
-    /* ============================================================
-       ЭКРАН ЛОББИ (Стиль Gartic)
-       ============================================================ */
+    .logo-top { font-size: 1.5rem; font-weight: 900; color: var(--primary); }
+    
+    /* --- Экран лобби --- */
     .lobby-screen {
       flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 20px; overflow-y: auto;
+      overflow-y: auto; padding: 40px;
     }
     
-    .lobby-container {
-      display: flex; gap: 24px; max-width: 1000px; width: 100%; align-items: stretch;
+    /* Анимированный логотип */
+    .hero-logo {
+      display: flex; flex-direction: column; align-items: center; margin-bottom: 40px;
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    .hero-svg { width: 140px; height: 140px; margin-bottom: 16px; }
+    
+    @keyframes drawCroc {
+      0% { stroke-dashoffset: 400; }
+      100% { stroke-dashoffset: 0; }
+    }
+    @keyframes blinkCroc {
+      0%, 90%, 100% { transform: scaleY(1); }
+      95% { transform: scaleY(0.1); }
     }
 
+    .hero-title { font-size: 2.5rem; font-weight: 900; color: var(--primary); letter-spacing: -1px; }
+
+    .lobby-grid { display: flex; gap: 32px; width: 100%; max-width: 900px; }
     .panel {
       background: var(--bg-panel); border-radius: var(--radius-lg); padding: 32px;
-      box-shadow: var(--shadow-panel); flex: 1; display: flex; flex-direction: column;
+      box-shadow: var(--shadow-panel); flex: 1; display: flex; flex-direction: column; gap: 20px;
+      animation: panelIn 0.4s ease-out forwards;
+    }
+    @keyframes panelIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Левая панель: Игрок и Создание */
-    .profile-section { display: flex; flex-direction: column; gap: 20px; align-items: center; text-align: center; }
-    .avatar-big {
-      width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--primary);
-      padding: 4px; background: var(--bg-panel); overflow: hidden;
+    .avatar-upload {
+      position: relative; width: 100px; height: 100px; border-radius: 50%;
+      background: var(--bg-body); border: 3px solid var(--primary); overflow: hidden;
+      cursor: pointer; align-self: center; transition: 0.2s;
     }
-    .avatar-big img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-    
-    .name-input { font-size: 1.2rem; text-align: center; font-weight: 800; }
-    
-    .tabs { display: flex; background: var(--bg-body); border-radius: var(--radius-sm); padding: 6px; margin-top: 10px; }
-    .tab { flex: 1; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; font-weight: 800; color: var(--text-muted); transition: 0.2s; }
-    .tab.active { background: var(--bg-panel); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .avatar-upload:hover { transform: scale(1.05); }
+    .avatar-upload img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar-upload input { display: none; }
+    .avatar-hint {
+      position: absolute; inset: 0; background: rgba(0,0,0,0.5); color: #fff;
+      display: flex; align-items: center; justify-content: center; font-size: 0.8rem;
+      font-weight: 800; opacity: 0; transition: 0.2s; text-align: center;
+    }
+    .avatar-upload:hover .avatar-hint { opacity: 1; }
 
-    .form-group { display: flex; flex-direction: column; gap: 8px; text-align: left; }
-    .form-group label { font-size: 0.9rem; font-weight: 700; color: var(--text-muted); margin-left: 4px; }
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+    .form-group label { font-size: 0.9rem; font-weight: 800; color: var(--text-muted); }
     
-    .row-segmented { display: flex; gap: 8px; }
-    .row-segmented button { flex: 1; background: var(--bg-body); color: var(--text-muted); border: 2px solid transparent; font-size: 0.9rem; min-height: 40px; border-radius: 8px; }
-    .row-segmented button.active { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+    .row-segmented { display: flex; gap: 8px; background: var(--bg-body); padding: 6px; border-radius: var(--radius-sm); }
+    .row-segmented button {
+      flex: 1; height: 40px; padding: 0; background: transparent; color: var(--text-muted);
+      border-radius: 8px; box-shadow: none; font-size: 0.9rem;
+    }
+    .row-segmented button.active { background: var(--bg-panel); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-    /* Правая панель: Правила */
-    .rules-section { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 16px; background: var(--primary-light); }
-    .rules-section h2 { color: var(--primary-hover); font-size: 1.5rem; }
-    .rules-section p { font-weight: 600; color: var(--text-main); line-height: 1.5; }
-    .rules-img { font-size: 4rem; margin-bottom: 10px; }
+    .tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 10px; }
+    .tab { flex: 1; padding: 12px; text-align: center; font-weight: 800; color: var(--text-muted); cursor: pointer; border-bottom: 3px solid transparent; transition: 0.2s; }
+    .tab:hover { color: var(--text-main); }
+    .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
 
-    /* Ожидание в лобби */
-    .waiting-room { display: flex; flex-direction: column; gap: 20px; }
-    .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
+    /* Экран ожидания */
+    .waiting-panel { max-width: 800px; width: 100%; margin: 0 auto; }
+    .info-row { display: flex; justify-content: center; gap: 40px; margin-bottom: 24px; font-weight: 800; font-size: 1.1rem; color: var(--text-muted); }
+    .info-row span span { color: var(--text-main); }
+    .players-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 16px; }
     .player-card {
       background: var(--bg-body); border-radius: var(--radius-md); padding: 16px;
-      display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative;
+      display: flex; flex-direction: column; align-items: center; gap: 10px; position: relative;
+      transition: 0.2s; animation: playerIn 0.3s ease-out;
     }
-    .player-card img { width: 48px; height: 48px; border-radius: 50%; }
-    .player-card .name { font-weight: 800; font-size: 0.9rem; text-align: center; word-break: break-word; }
-    .player-card .host-badge { position: absolute; top: -8px; right: -8px; background: var(--warning); color: #fff; font-size: 0.7rem; padding: 2px 8px; border-radius: 99px; font-weight: 800; }
+    @keyframes playerIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    .player-card:hover { background: var(--bg-panel-hover); transform: translateY(-2px); }
+    .player-card img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); }
+    .player-card .name { font-weight: 800; font-size: 0.95rem; text-align: center; word-break: break-word; }
+    .host-badge { position: absolute; top: -6px; right: -6px; background: var(--warning); color: #fff; font-size: 0.7rem; padding: 2px 8px; border-radius: 99px; font-weight: 900; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-    /* ============================================================
-       ИГРОВОЙ ЭКРАН
-       ============================================================ */
-    .game-screen { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 20px; gap: 16px; }
+    /* --- Экран игры --- */
+    .game-screen { flex: 1; display: flex; overflow: hidden; background: var(--bg-body); }
+    
+    .sidebar {
+      width: 320px; background: var(--bg-panel); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.02); z-index: 5;
+    }
+    .sidebar-header { padding: 24px; border-bottom: 1px solid var(--border); }
+    .sidebar-players { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+    
+    .list-player {
+      display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+      background: var(--bg-body); border-radius: var(--radius-sm); font-weight: 700; transition: 0.2s;
+    }
+    .list-player img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+    .list-player .score { margin-left: auto; color: var(--primary); font-weight: 900; font-size: 1.1rem; }
+    .list-player.host-turn { border: 2px solid var(--warning); background: rgba(245, 158, 11, 0.05); }
+
+    .main-area { flex: 1; display: flex; flex-direction: column; position: relative; }
     
     .game-header {
       display: flex; justify-content: space-between; align-items: center;
-      background: var(--bg-panel); padding: 16px 24px; border-radius: var(--radius-md); box-shadow: var(--shadow-panel);
+      padding: 20px 32px; background: var(--bg-panel); border-bottom: 1px solid var(--border);
     }
-    .game-info { display: flex; gap: 20px; align-items: center; }
-    .info-badge { font-weight: 800; color: var(--text-muted); }
-    .timer { font-size: 1.5rem; font-weight: 900; color: var(--primary); }
-    .timer.warning { color: var(--danger); animation: pulse 1s infinite; }
+    .timer-big { font-size: 2.5rem; font-weight: 900; color: var(--primary); font-variant-numeric: tabular-nums; }
+    .timer-big.warning { color: var(--danger); animation: pulse 1s infinite; }
     @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 
-    .role-tag { padding: 8px 16px; border-radius: 99px; font-weight: 900; font-size: 0.9rem; }
-    .role-tag.explainer { background: var(--primary); color: #fff; }
-    .role-tag.guesser { background: var(--secondary); color: #fff; }
-
-    .game-main { flex: 1; display: flex; gap: 16px; overflow: hidden; }
-
-    /* Зона слова */
-    .word-panel {
-      flex: 0 0 35%; background: var(--bg-panel); border-radius: var(--radius-md);
-      box-shadow: var(--shadow-panel); display: flex; flex-direction: column;
-      align-items: center; justify-content: center; padding: 24px; text-align: center;
-    }
-    .word-panel .label { font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; font-size: 0.9rem; }
-    .secret-word { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; color: var(--primary); word-break: break-word; line-height: 1.1; }
-    .word-hint { margin-top: 20px; font-weight: 600; color: var(--text-muted); font-size: 0.95rem; }
+    .play-zone { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; gap: 24px; }
+    .word-display { font-size: 4rem; font-weight: 900; color: var(--primary); letter-spacing: 2px; text-align: center; animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
     
-    .letter-boxes { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-    .letter-box {
-      width: 40px; height: 50px; background: var(--bg-body); border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem; font-weight: 900; color: var(--text-main); transition: 0.3s;
+    .letter-boxes { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .letter-box { 
+      width: 56px; height: 72px; background: var(--bg-panel); border-radius: 12px; 
+      display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 900; 
+      box-shadow: var(--shadow-panel); transition: 0.4s; 
     }
-    .letter-box.revealed { background: var(--primary); color: #fff; }
+    .letter-box.revealed { background: var(--primary); color: #fff; transform: rotateY(360deg); }
 
-    /* Зона чата */
-    .chat-panel {
-      flex: 1; background: var(--bg-panel); border-radius: var(--radius-md);
-      box-shadow: var(--shadow-panel); display: flex; flex-direction: column; overflow: hidden;
+    .explainer-info {
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      padding: 24px 40px; background: var(--bg-panel); border-radius: var(--radius-lg); 
+      box-shadow: var(--shadow-panel); border: 2px solid var(--warning);
     }
-    .chat-history {
-      flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
-      scroll-behavior: smooth;
-    }
-    .message {
-      max-width: 80%; padding: 12px 16px; border-radius: var(--radius-sm);
-      background: var(--bg-body); font-weight: 600; line-height: 1.4; word-break: break-word;
-      animation: slideIn 0.2s ease-out;
-    }
-    @keyframes slideIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .explainer-info img { width: 96px; height: 96px; border-radius: 50%; border: 3px solid var(--warning); object-fit: cover; }
+    .explainer-info span { font-weight: 900; font-size: 1.4rem; }
+    .explainer-info small { color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* Чат */
+    .chat-area { height: 350px; background: var(--bg-panel); border-top: 1px solid var(--border); display: flex; flex-direction: column; }
+    .chat-messages { flex: 1; padding: 20px 32px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .chat-input-row { padding: 16px 32px; border-top: 1px solid var(--border); display: flex; gap: 16px; background: var(--bg-panel); }
     
-    .message.mine { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
-    .message.others { align-self: flex-start; border-bottom-left-radius: 4px; }
-    .message.system { align-self: center; background: transparent; color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 4px; }
-    .message.hint { border-left: 4px solid var(--warning); background: var(--bg-panel-hover); }
+    .msg { max-width: 75%; padding: 10px 16px; border-radius: var(--radius-sm); font-weight: 600; font-size: 0.95rem; animation: slideUp 0.2s ease-out; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .msg.mine { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 2px; }
+    .msg.other { align-self: flex-start; background: var(--bg-body); color: var(--text-main); border-bottom-left-radius: 2px; }
+    .msg.system { align-self: center; background: transparent; color: var(--text-muted); font-size: 0.85rem; padding: 4px; }
+    .msg.hint { border-left: 4px solid var(--warning); background: var(--bg-panel-hover); }
     
-    .msg-author { font-size: 0.8rem; font-weight: 800; color: var(--text-muted); margin-bottom: 4px; }
-    .message.mine .msg-author { color: rgba(255,255,255,0.7); }
+    .msg-name { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 4px; }
+    .msg.mine .msg-name { color: rgba(255,255,255,0.8); }
 
-    .chat-input-area {
-      padding: 16px; border-top: 2px solid var(--border); display: flex; gap: 12px;
-      background: var(--bg-panel); padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-    }
-    .chat-input-area input { flex: 1; border-radius: 99px; padding-left: 20px; }
-    .chat-input-area button { width: 52px; height: 52px; padding: 0; border-radius: 50%; flex-shrink: 0; font-size: 1.2rem; }
+    /* Уведомления */
+    #toastContainer { position: fixed; top: 24px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 9999; pointer-events: none; }
+    .toast { padding: 14px 28px; border-radius: 12px; font-weight: 800; box-shadow: 0 10px 25px rgba(0,0,0,0.15); background: var(--bg-panel); color: var(--text-main); animation: toastIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .toast.error { background: var(--danger); color: #fff; }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(-20px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-    /* Мобильная адаптация */
-    @media (max-width: 768px) {
-      .lobby-container { flex-direction: column; }
-      .rules-section { display: none; } /* Скрываем правила на телефоне, чтобы не мешали */
-      .game-main { flex-direction: column; }
-      .word-panel { flex: 0 0 auto; padding: 20px; }
-      .letter-box { width: 32px; height: 42px; font-size: 1.2rem; }
-    }
   </style>
 </head>
 <body data-theme="light">
   
-  <!-- Верхняя панель -->
   <header class="topbar">
-    <div class="logo">КРОКО<span>ДИЛ</span></div>
-    <div class="topbar-actions">
-      <button class="icon-btn" id="themeBtn" title="Сменить тему">🌙</button>
-    </div>
+    <div class="logo-top">Игра в ассоциации</div>
+    <button class="btn-outline" id="btnTheme" style="width: 48px; padding: 0; border: none; font-size: 1.2rem;">🌙</button>
   </header>
 
-  <!-- ЭКРАН ЛОББИ -->
   <main class="lobby-screen" id="lobbyScreen">
     
-    <!-- Форма входа -->
-    <div class="lobby-container" id="entryView">
+    <!-- Экран входа -->
+    <div id="entryView" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
       
-      <!-- Левая панель: Профиль и Создание -->
-      <div class="panel">
-        <div class="profile-section">
-          <div class="avatar-big" id="avatarPreview"></div>
-          <input type="text" id="nicknameInput" class="name-input" placeholder="Ваш никнейм" maxlength="15">
-        </div>
-
-        <div class="tabs">
-          <div class="tab active" id="tabCreate">Создать</div>
-          <div class="tab" id="tabJoin">Войти</div>
-        </div>
-
-        <!-- Создание комнаты -->
-        <div id="createForm" style="display: flex; flex-direction: column; gap: 16px;">
-          <div class="form-group">
-            <label>Лимит игроков</label>
-            <div class="row-segmented" id="maxPlayersSeg">
-              <button data-val="4" class="active">4</button>
-              <button data-val="8">8</button>
-              <button data-val="16">16</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Время раунда</label>
-            <div class="row-segmented" id="roundTimeSeg">
-              <button data-val="60">60с</button>
-              <button data-val="90" class="active">90с</button>
-              <button data-val="120">120с</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Категория слов</label>
-            <select id="categorySelect">
-              <option value="general">Разные</option>
-              <option value="cinema">Кино и Игры</option>
-              <option value="abstract">Абстрактные</option>
-            </select>
-          </div>
-          <button class="btn-primary" id="btnCreateRoom" style="margin-top: 10px;">СОЗДАТЬ КОМНАТУ</button>
-        </div>
-
-        <!-- Подключение к комнате -->
-        <div id="joinForm" style="display: none; flex-direction: column; gap: 16px;">
-          <div class="form-group">
-            <label>Код комнаты</label>
-            <input type="text" id="joinCodeInput" placeholder="CROC-1234" style="text-transform: uppercase; text-align: center; font-size: 1.2rem; letter-spacing: 2px;">
-          </div>
-          <button class="btn-primary" id="btnJoinRoom" style="margin-top: 10px;">ВОЙТИ</button>
-        </div>
+      <!-- Анимированный логотип -->
+      <div class="hero-logo">
+        <svg class="hero-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Контур крокодила -->
+          <path d="M 20 50 Q 20 20, 50 20 Q 80 20, 80 50 Q 80 80, 50 80 Q 20 80, 20 50" 
+                stroke="var(--primary)" stroke-width="6" stroke-linecap="round" 
+                stroke-dasharray="400" style="animation: drawCroc 3s ease-in-out infinite alternate;"/>
+          <!-- Глаза -->
+          <circle cx="40" cy="45" r="6" fill="var(--primary)" style="transform-origin: 40px 45px; animation: blinkCroc 4s infinite;"/>
+          <circle cx="60" cy="45" r="6" fill="var(--primary)" style="transform-origin: 60px 45px; animation: blinkCroc 4s infinite;"/>
+          <!-- Пасть -->
+          <path d="M 40 65 Q 50 75, 60 65" stroke="var(--primary)" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+        <h1 class="hero-title">КРОКОДИЛ</h1>
       </div>
 
-      <!-- Правая панель: Правила -->
-      <div class="panel rules-section">
-        <div class="rules-img">🐊</div>
-        <h2>КАК ИГРАТЬ</h2>
-        <p>Ведущий видит слово и объясняет его ассоциациями в чате.</p>
-        <p>Остальные игроки пытаются угадать слово и пишут догадки в чат.</p>
-        <p>Угадавший получает очки, а ведущий получает баллы за хорошее объяснение!</p>
+      <div class="lobby-grid">
+        <div class="panel">
+          <div class="avatar-upload" id="avatarContainer">
+            <img id="avatarPreview" src="" alt="Avatar">
+            <div class="avatar-hint">Загрузить<br>фото</div>
+            <input type="file" id="avatarInput" accept="image/png, image/jpeg">
+          </div>
+          <input type="text" id="nicknameInput" placeholder="Ваш никнейм" maxlength="15" style="text-align: center;">
+          
+          <div class="tabs">
+            <div class="tab active" id="tabCreate">Создать</div>
+            <div class="tab" id="tabJoin">Войти</div>
+          </div>
+
+          <div id="createForm" style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="form-group">
+              <label>Лимит игроков</label>
+              <div class="row-segmented" id="segPlayers">
+                <button data-val="4" class="active">4</button>
+                <button data-val="8">8</button>
+                <button data-val="16">16</button>
+                <button data-val="32">32</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Время раунда</label>
+              <div class="row-segmented" id="segTime">
+                <button data-val="60">60с</button>
+                <button data-val="90" class="active">90с</button>
+                <button data-val="120">120с</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Категория слов</label>
+              <select id="categorySelect" style="font-family: inherit; font-size: 1rem; font-weight: 600; padding: 12px 16px; border: 2px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-panel); color: var(--text-main); height: 52px;">
+                <option value="general">Разные</option>
+                <option value="cinema">Кино и Игры</option>
+                <option value="abstract">Абстрактные</option>
+              </select>
+            </div>
+            <button class="btn-primary" id="btnCreateRoom" style="margin-top: 10px;">СОЗДАТЬ КОМНАТУ</button>
+          </div>
+
+          <div id="joinForm" style="display: none; flex-direction: column; gap: 16px;">
+            <input type="text" id="joinCodeInput" placeholder="КОД КОМНАТЫ" style="text-transform: uppercase; text-align: center; letter-spacing: 2px;">
+            <button class="btn-primary" id="btnJoinRoom">ВОЙТИ</button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Ожидание в комнате -->
-    <div class="panel waiting-room hidden" id="lobbyView" style="max-width: 600px; width: 100%;">
-      <h2 style="text-align: center; margin-bottom: 10px;">Комната: <span id="roomCodeDisplay" style="color: var(--primary);">CROC-0000</span></h2>
-      <p style="text-align: center; color: var(--text-muted); font-weight: 600; margin-bottom: 20px;">Ожидаем игроков...</p>
+    <!-- Экран ожидания -->
+    <div class="panel waiting-panel hidden" id="waitingView">
+      <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 12px;">Комната: <span id="roomCodeDisplay" style="color: var(--primary);">CROC-0000</span></h2>
       
-      <div class="player-grid" id="playerList"></div>
+      <div class="info-row">
+        <span>Игроки: <span id="playerCountDisplay" style="color: var(--text-main);">1/4</span></span>
+        <span>Время раунда: <span id="timeLimitDisplay" style="color: var(--text-main);">90с</span></span>
+      </div>
+
+      <div class="players-grid" id="waitingPlayerList"></div>
       
-      <div style="display: flex; gap: 12px; margin-top: 24px;">
-        <button class="btn-outline" id="btnCopyLink" style="flex: 1;">Скопировать ссылку</button>
-        <button class="btn-outline" id="btnLeaveRoom" style="color: var(--danger); border-color: var(--danger);">Выйти</button>
+      <div style="display: flex; gap: 16px; margin-top: 32px;">
+        <button class="btn-outline" id="btnCopyLink" style="flex: 1;">СКОПИРОВАТЬ ССЫЛКУ</button>
+        <button class="btn-outline" id="btnLeaveWait" style="color: var(--danger); border-color: var(--danger);">ВЫЙТИ</button>
       </div>
       
-      <button class="btn-primary" id="btnStartGame" style="margin-top: 12px; width: 100%; font-size: 1.1rem; height: 56px;">НАЧАТЬ ИГРУ</button>
-      <p id="waitingHostText" class="hidden" style="text-align: center; color: var(--text-muted); font-weight: 600; margin-top: 20px;">Ждем, пока хост начнет игру...</p>
+      <button class="btn-primary" id="btnStartGame" style="margin-top: 16px; height: 60px; font-size: 1.3rem;">НАЧАТЬ ИГРУ</button>
+      <p id="textWaitHost" class="hidden" style="text-align: center; color: var(--text-muted); font-weight: 800; margin-top: 20px; font-size: 1.1rem;">Ожидание хоста...</p>
     </div>
   </main>
 
-  <!-- ЭКРАН ИГРЫ -->
+  <!-- Экран игры -->
   <main class="game-screen hidden" id="gameScreen">
     
-    <div class="game-header">
-      <div class="game-info">
-        <span class="info-badge" id="roundDisplay">Раунд 1</span>
-        <span class="timer" id="timerDisplay">90</span>
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h3 style="font-weight: 900; font-size: 1.2rem; margin-bottom: 8px;">Раунд <span id="roundNumDisplay">1</span></h3>
+        <div class="timer-big" id="timerDisplay">90</div>
       </div>
-      <div style="display: flex; align-items: center; gap: 16px;">
-        <span class="role-tag guesser" id="roleTag">ВЫ ОТГАДЫВАЕТЕ</span>
-        <button class="icon-btn" id="btnLeaveGame" style="color: var(--danger);">✕</button>
+      <div class="sidebar-players" id="gamePlayerList"></div>
+      <div style="padding: 20px; border-top: 1px solid var(--border);">
+        <button class="btn-outline" id="btnLeaveGame" style="width: 100%; color: var(--danger); border-color: var(--danger);">ПОКИНУТЬ ИГРУ</button>
       </div>
-    </div>
+    </aside>
 
-    <div class="game-main">
-      
-      <!-- Панель слова -->
-      <div class="word-panel">
-        <div class="label" id="wordLabel">СЕКРЕТНОЕ СЛОВО</div>
-        <div id="wordDisplay" style="width: 100%;"></div>
-        <div class="word-hint" id="wordHint"></div>
+    <div class="main-area">
+      <div class="play-zone">
+        
+        <div id="explainerBox" class="explainer-info hidden">
+          <img id="explainerAvatar" src="" alt="Explainer">
+          <span id="explainerName">Игрок</span>
+          <small>ВЕДУЩИЙ</small>
+        </div>
+
+        <div class="word-display hidden" id="secretWordDisplay"></div>
+        <div class="letter-boxes" id="letterBoxesDisplay"></div>
+        
+        <p id="gameHintText" style="font-size: 1.2rem; font-weight: 800; color: var(--text-muted); text-align: center;"></p>
       </div>
 
-      <!-- Панель чата -->
-      <div class="chat-panel">
-        <div class="chat-history" id="chatHistory"></div>
-        <div class="chat-input-area">
+      <div class="chat-area">
+        <div class="chat-messages" id="chatHistory"></div>
+        <div class="chat-input-row">
           <input type="text" id="chatInput" placeholder="Введите текст..." maxlength="100" autocomplete="off">
-          <button class="btn-primary" id="btnSendChat">↑</button>
+          <button class="btn-primary" id="btnSendChat" style="width: 120px;">ВВОД</button>
         </div>
       </div>
-
     </div>
   </main>
 
-  <!-- Контейнер для уведомлений -->
-  <div id="toastContainer" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 1000; pointer-events: none;"></div>
+  <div id="toastContainer"></div>
 
   <script>
-    // ============================================================
-    // СЛОВАРЬ
-    // ============================================================
+    /* --- Словарь --- */
     const WORDS = {
       general: ['крокодил','радуга','библиотека','вертолёт','подснежник','аквариум','балерина','велосипед','гитара','динозавр','ёжик','жонглёр','зонтик','избушка','карусель','ленивец','магнит','нарцисс','облако','пингвин','ракета','самовар','телескоп','улитка','фонарь','художник','циркуль','часы','шоколад','щетка','экскаватор','юла','якорь','апельсин','бабочка','вулкан','глобус','дельфин','ежевика','жираф','зеркало','иллюзия','кактус','ледокол','мельница','ножницы','остров','паровоз','ромашка','светлячок','трамвай','улыбка','фейерверк','холодильник','цветок','чучело','шахматы','эскимо','яблоко','аккордеон','балкон','виноград','гамак','дождь','ёлка','журавль','замок','игрушка','календарь','лампа','медведь','нора','осень','подушка','ракушка','снегирь','туча','учёный','флейта','хлеб','цапля','черёмуха','шарик','эхо','ящерица'],
       cinema: ['титаник','матрица','терминатор','бетмен','супермен','человек-паук','гарри-поттер','хоббит','шрек','король-лев','русалочка','золушка','белоснежка','пиноккио','карлсон','чебурашка','винни-пух','буратино','незнайка','маугли','робокоп','трансформеры','аватар','индиана-джонс','джеймс-бонд','форсаж','трон','варкрафт','марио','соник','покемон','зельда','майнкрафт','тетрис','гта','симпсоны','южный-парк','футурама','рик-и-морти','игра-престолов','во-все-тяжкие','друзья','теория-большого-взрыва','шерлок','доктор-кто','звёздные-войны','звёздный-путь','чужие','хищник','парк-юрского-периода','назад-в-будущее','крестный-отец','криминальное-чтиво','бойцовский-клуб','форрест-гамп','побег-из-шоушенка','зеленая-миля','леон','пятый-элемент','интерстеллар','начало','престиж','остров-проклятых','сияние','оно','ведьма-из-блэр','астрал','заклятие'],
       abstract: ['абстракция','авантюра','агитация','агрессия','альтруизм','амбивалентность','аналогия','апокалипсис','апробация','аргумент','ассоциация','атрибут','аутентичность','баллада','бесконечность','безмятежность','бифуркация','благодарность','бренность','бюрократия','виртуальность','вероятность','гармония','гегемония','гипотеза','глобализация','девиация','дедукция','декогеренция','делегирование','демократия','деструкция','детерминизм','дилемма','динамика','диссонанс','дифференциация','догма','дуализм','идентичность','иерархия','иллюминация','инверсия','интуиция','иррациональность','катарсис','квазистабильность','когнитивность','коллаборация','коммуникация','конвергенция','коннотация','консенсус','континуум','конфронтация','концепция','координация','корреляция','креативность','легитимность','лояльность','маргинальность','медитация','менталитет','метаморфоза','метафора','мировоззрение','мобильность','мотивация','навигация','нарратив','нирвана','ностальгия','нумизмат','обскурантизм','оптимизация','парадигма','парадокс','перфекционизм','плюрализм','позиционирование','полемика','прагматизм','презумпция','прогностика','прокрастинация','рефлексия','рецессия','сакральность','семантика','синергия','скептицизм','солипсизм','сотрудничество','стохастика','сублимация','тавтология','толерантность','трансформация','утопия','фрустрация','экзистенция','эмпатия','энтропия','эскапизм']
     };
 
-    // ============================================================
-    // СОСТОЯНИЕ
-    // ============================================================
+    /* --- Глобальное состояние --- */
     const App = {
       client: null,
       roomCode: '',
       isHost: false,
       myId: '',
       myName: '',
+      myAvatar: '',
       
       players: new Map(),
-      settings: { maxPlayers: 8, roundTime: 90, category: 'general' },
-      
+      settings: { maxPlayers: 4, roundTime: 90, category: 'general' },
       round: { number: 1, explainerId: null, wordLength: 0, endTime: 0, isActive: false },
       
       _secretWord: '',
@@ -404,61 +412,76 @@
       _clientTimer: null
     };
 
-    // ============================================================
-    // УТИЛИТЫ
-    // ============================================================
+    /* --- Утилиты --- */
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => [...document.querySelectorAll(sel)];
-    
+
     function toast(msg, type = 'info') {
       const container = $('#toastContainer');
-      if (!container) return;
       const el = document.createElement('div');
       el.className = `toast ${type}`;
       el.textContent = msg;
-      el.style.padding = '12px 24px';
-      el.style.background = type === 'error' ? 'var(--danger)' : 'var(--bg-panel)';
-      el.style.color = type === 'error' ? '#fff' : 'var(--text-main)';
-      el.style.borderRadius = '12px';
-      el.style.fontWeight = '800';
-      el.style.boxShadow = 'var(--shadow-panel)';
-      el.style.animation = 'slideIn 0.3s ease-out';
       container.appendChild(el);
       setTimeout(() => el.remove(), 3000);
     }
 
-    function getAvatarUrl(seed) {
-      return `https://api.dicebear.com/9.x/bottts/svg?seed=${encodeURIComponent(seed || 'player')}&backgroundColor=10b981,3b82f6,f59e0b&radius=50`;
+    function generateAvatar(name) {
+      return `https://api.dicebear.com/9.x/bottts/svg?seed=${encodeURIComponent(name)}&backgroundColor=10b981,3b82f6,f59e0b&radius=50`;
     }
 
     function normalize(str) {
       return str.toLowerCase().replace(/ё/g, 'е').trim();
     }
 
-    // ============================================================
-    // UI ЛОГИКА
-    // ============================================================
+    /* --- Инициализация UI --- */
     function initUI() {
       // Тема
-      const savedTheme = localStorage.getItem('croc_theme') || 'light';
+      const savedTheme = localStorage.getItem('theme') || 'light';
       document.body.dataset.theme = savedTheme;
-      $('#themeBtn').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-      
-      $('#themeBtn').addEventListener('click', () => {
+      $('#btnTheme').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+      $('#btnTheme').addEventListener('click', () => {
         const next = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
         document.body.dataset.theme = next;
-        localStorage.setItem('croc_theme', next);
-        $('#themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
+        localStorage.setItem('theme', next);
+        $('#btnTheme').textContent = next === 'dark' ? '☀️' : '🌙';
       });
 
-      // Никнейм и аватар
+      // Профиль и Аватар
       const nickInput = $('#nicknameInput');
+      const avatarImg = $('#avatarPreview');
+      const avatarInput = $('#avatarInput');
+
       nickInput.value = 'Игрок' + Math.floor(100 + Math.random() * 900);
-      const updateAvatar = () => {
-        $('#avatarPreview').innerHTML = `<img src="${getAvatarUrl(nickInput.value)}">`;
-      };
-      nickInput.addEventListener('input', updateAvatar);
-      updateAvatar();
+      App.myAvatar = generateAvatar(nickInput.value);
+      avatarImg.src = App.myAvatar;
+
+      nickInput.addEventListener('input', () => {
+        if (!App.myAvatar || App.myAvatar.startsWith('http')) {
+          App.myAvatar = generateAvatar(nickInput.value);
+          avatarImg.src = App.myAvatar;
+        }
+      });
+
+      // Сжатие кастомного аватара через Canvas
+      avatarInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 128;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, 128, 128);
+            App.myAvatar = canvas.toDataURL('image/jpeg', 0.8);
+            avatarImg.src = App.myAvatar;
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
 
       // Табы
       $('#tabCreate').addEventListener('click', () => {
@@ -474,19 +497,21 @@
         $('#joinForm').style.display = 'flex';
       });
 
-      // Сегменты настроек
-      function setupSegmented(id, callback) {
+      // Настройки сессии
+      function setupSeg(id, key) {
         $('#' + id).addEventListener('click', (e) => {
           if (e.target.tagName !== 'BUTTON') return;
           $$(`#${id} button`).forEach(b => b.classList.remove('active'));
           e.target.classList.add('active');
-          callback(parseInt(e.target.dataset.val));
+          App.settings[key] = parseInt(e.target.dataset.val);
         });
       }
-      setupSegmented('maxPlayersSeg', val => App.settings.maxPlayers = val);
-      setupSegmented('roundTimeSeg', val => App.settings.roundTime = val);
+      setupSeg('segPlayers', 'maxPlayers');
+      setupSeg('segTime', 'roundTime');
       
-      $('#categorySelect').addEventListener('change', e => App.settings.category = e.target.value);
+      $('#categorySelect').addEventListener('change', (e) => {
+        App.settings.category = e.target.value;
+      });
 
       // Кнопки Создать / Войти
       $('#btnCreateRoom').addEventListener('click', () => {
@@ -505,20 +530,32 @@
         startNetwork(code, false, name);
       });
 
-      // Кнопки в комнате
+      // Выход
+      const leaveSession = () => {
+        if (App.client) {
+          publish(`croc_room_${App.roomCode}`, { type: 'leave', id: App.myId });
+          setTimeout(() => {
+            App.client.end(true);
+            location.reload();
+          }, 100);
+        } else {
+          location.reload();
+        }
+      };
+
+      $('#btnLeaveWait').addEventListener('click', leaveSession);
+      $('#btnLeaveGame').addEventListener('click', leaveSession);
+
+      // Копировать ссылку
       $('#btnCopyLink').addEventListener('click', () => {
         const url = `${location.origin}${location.pathname}?room=${App.roomCode}`;
         navigator.clipboard.writeText(url).then(() => toast('Ссылка скопирована!'));
       });
 
-      const leaveRoom = () => {
-        if (App.client) App.client.end();
-        location.reload();
-      };
-      $('#btnLeaveRoom').addEventListener('click', leaveRoom);
-      $('#btnLeaveGame').addEventListener('click', leaveRoom);
-
+      // Старт игры
       $('#btnStartGame').addEventListener('click', () => {
+        if (!App.isHost) return;
+        publish(`croc_room_${App.roomCode}`, { type: 'game_start' });
         startGame();
       });
 
@@ -547,23 +584,9 @@
         $('#joinCodeInput').value = params.get('room').toUpperCase();
         $('#tabJoin').click();
       }
-      
-      // Мобильная клавиатура
-      if (window.visualViewport) {
-        window.visualViewport.addEventListener('resize', () => {
-          const vv = window.visualViewport;
-          const kbOpen = window.innerHeight - vv.height > 100;
-          const area = $('.chat-input-area');
-          if (area) {
-            area.style.transform = kbOpen ? `translateY(-${window.innerHeight - vv.height - vv.offsetTop}px)` : 'none';
-          }
-        });
-      }
     }
 
-    // ============================================================
-    // СЕТЬ (MQTT)
-    // ============================================================
+    /* --- Сеть (MQTT) --- */
     function publish(topic, payload) {
       if (App.client && App.client.connected) {
         App.client.publish(topic, JSON.stringify(payload));
@@ -577,21 +600,18 @@
       App.myId = (isHost ? 'HOST_' : 'P_') + Math.random().toString(36).substring(2, 8);
 
       const topicRoom = `croc_room_${code}`;
-      const topicPrivate = `${topicRoom}/p_${App.myId}`;
-
       App.client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', { clientId: App.myId });
 
       App.client.on('connect', () => {
         App.client.subscribe(topicRoom);
-        if (!isHost) App.client.subscribe(topicPrivate);
 
         if (isHost) {
-          App.players.set(App.myId, { id: App.myId, name: App.myName, avatar: getAvatarUrl(App.myName), score: 0, isHost: true });
+          App.players.set(App.myId, { id: App.myId, name: App.myName, avatar: App.myAvatar, score: 0, isHost: true });
           broadcastState();
-          showLobbyView();
+          showWaitingView();
         } else {
-          publish(topicRoom, { type: 'hello', id: App.myId, name: App.myName, avatar: getAvatarUrl(App.myName) });
-          showLobbyView();
+          publish(topicRoom, { type: 'hello', id: App.myId, name: App.myName, avatar: App.myAvatar });
+          showWaitingView();
         }
       });
 
@@ -602,40 +622,32 @@
         if (isHost) handleHostData(data, topicRoom);
         else handleClientData(data);
       });
-
-      App.client.on('error', () => toast('Ошибка сети', 'error'));
-
-      window.addEventListener('beforeunload', () => {
-        if (App.client) {
-          publish(topicRoom, { type: 'leave', id: App.myId });
-          App.client.end();
-        }
-      });
     }
 
-    function showLobbyView() {
+    function showWaitingView() {
       $('#entryView').classList.add('hidden');
-      $('#lobbyView').classList.remove('hidden');
+      $('#waitingView').classList.remove('hidden');
       $('#roomCodeDisplay').textContent = App.roomCode;
       
       if (App.isHost) {
         $('#btnStartGame').classList.remove('hidden');
-        $('#waitingHostText').classList.add('hidden');
+        $('#textWaitHost').classList.add('hidden');
       } else {
         $('#btnStartGame').classList.add('hidden');
-        $('#waitingHostText').classList.remove('hidden');
+        $('#textWaitHost').classList.remove('hidden');
       }
     }
 
-    // ============================================================
-    // ЛОГИКА ХОСТА
-    // ============================================================
+    /* --- Логика Хоста --- */
     function handleHostData(data, topicRoom) {
       if (data.type === 'hello') {
-        if (App.players.size >= App.settings.maxPlayers) return;
+        if (App.players.size >= App.settings.maxPlayers) {
+          publish(topicRoom, { type: 'error', msg: 'Комната переполнена' });
+          return;
+        }
         App.players.set(data.id, { id: data.id, name: data.name, avatar: data.avatar, score: 0, isHost: false });
         broadcastState();
-        addSystemMsg(`${data.name} присоединился`, topicRoom);
+        addSystemMsg(`${data.name} присоединился к игре`, topicRoom);
       }
       
       if (data.type === 'chat') {
@@ -647,8 +659,10 @@
         if (p) {
           App.players.delete(data.id);
           broadcastState();
-          addSystemMsg(`${p.name} вышел`, topicRoom);
-          if (App.round.explainerId === data.id && App.round.isActive) endRound('timeout', null, topicRoom);
+          addSystemMsg(`${p.name} покинул игру`, topicRoom);
+          if (App.round.explainerId === data.id && App.round.isActive) {
+            endRound('timeout', null, topicRoom);
+          }
         }
       }
     }
@@ -684,8 +698,6 @@
     }
 
     function startGame() {
-      if (App.players.size < 2) return toast('Нужно минимум 2 игрока', 'error');
-      
       App.players.forEach(p => p.score = 0);
       App.round.number = 1;
       App.round.explainerId = null;
@@ -767,9 +779,7 @@
       }, 5000);
     }
 
-    // ============================================================
-    // ЛОГИКА КЛИЕНТА
-    // ============================================================
+    /* --- Логика Клиента --- */
     function handleClientData(data) {
       switch(data.type) {
         case 'state':
@@ -781,10 +791,15 @@
           updateLobbyUI();
           updateGameUI(data);
           
-          if (!$('#gameScreen').classList.contains('hidden') || $('#chatHistory').children.length > 0) {
-             $('#lobbyScreen').classList.add('hidden');
-             $('#gameScreen').classList.remove('hidden');
+          if (!$('#gameScreen').classList.contains('hidden')) {
+            $('#lobbyScreen').classList.add('hidden');
+            $('#gameScreen').classList.remove('hidden');
           }
+          break;
+        case 'game_start':
+          $('#lobbyScreen').classList.add('hidden');
+          $('#gameScreen').classList.remove('hidden');
+          $('#chatHistory').innerHTML = '';
           break;
         case 'secret':
           $('#lobbyScreen').classList.add('hidden');
@@ -801,14 +816,18 @@
             if (p) p.score = s.score;
           });
           break;
+        case 'error':
+          toast(data.msg, 'error');
+          break;
       }
     }
 
-    // ============================================================
-    // ОБНОВЛЕНИЕ UI
-    // ============================================================
+    /* --- Обновление UI --- */
     function updateLobbyUI() {
-      const list = $('#playerList');
+      $('#playerCountDisplay').textContent = `${App.players.size}/${App.settings.maxPlayers}`;
+      $('#timeLimitDisplay').textContent = `${App.settings.roundTime}с`;
+      
+      const list = $('#waitingPlayerList');
       if (!list) return;
       list.innerHTML = '';
       
@@ -826,25 +845,41 @@
 
     function updateGameUI(state) {
       const isExplainer = state.round.explainerId === App.myId;
+      const explainerData = App.players.get(state.round.explainerId);
       
-      $('#roundDisplay').textContent = `Раунд ${state.round.number}`;
+      $('#roundNumDisplay').textContent = state.round.number;
       
+      // Сайдбар со списком игроков
+      const gameList = $('#gamePlayerList');
+      gameList.innerHTML = '';
+      App.players.forEach(p => {
+        const el = document.createElement('div');
+        el.className = `list-player ${p.id === state.round.explainerId ? 'host-turn' : ''}`;
+        el.innerHTML = `
+          <img src="${p.avatar}">
+          <span>${p.name}</span>
+          <span class="score">${p.score}</span>
+        `;
+        gameList.appendChild(el);
+      });
+
+      // Центральный блок
+      const exBox = $('#explainerBox');
       if (isExplainer) {
-        $('#roleTag').textContent = 'ВЫ ВЕДУЩИЙ';
-        $('#roleTag').className = 'role-tag explainer';
-        $('#wordLabel').textContent = 'ВАШЕ СЕКРЕТНОЕ СЛОВО';
-        $('#wordHint').innerHTML = 'Пишите намеки в чат. <br><b>Нельзя использовать однокоренные слова!</b>';
+        exBox.classList.add('hidden');
+        $('#gameHintText').innerHTML = 'Пишите намеки в чат. <br>Нельзя использовать однокоренные слова!';
       } else {
-        $('#roleTag').textContent = 'ВЫ ОТГАДЫВАЕТЕ';
-        $('#roleTag').className = 'role-tag guesser';
-        $('#wordLabel').textContent = 'ЗАГАДАННОЕ СЛОВО';
-        $('#wordHint').innerHTML = 'Читайте намеки ведущего и пишите догадки в чат.';
+        exBox.classList.remove('hidden');
+        $('#explainerAvatar').src = explainerData ? explainerData.avatar : generateAvatar('?');
+        $('#explainerName').textContent = explainerData ? explainerData.name : '???';
+        $('#gameHintText').innerHTML = 'Читайте намеки ведущего и пишите догадки в чат.';
         
-        if (state.round.isActive && !$('#wordDisplay').querySelector('.secret-word')) {
+        if (state.round.isActive && !$('#secretWordDisplay').textContent) {
            renderEmptyBoxes(state.round.wordLength);
         }
       }
 
+      // Локальный таймер
       if (state.round.isActive) {
         clearInterval(App._clientTimer);
         App._clientTimer = setInterval(() => {
@@ -861,13 +896,16 @@
     }
 
     function showWordUI(word) {
-      const el = $('#wordDisplay');
-      if (el) el.innerHTML = `<div class="secret-word">${word}</div>`;
+      const el = $('#secretWordDisplay');
+      if (el) {
+        el.textContent = word;
+        el.classList.remove('hidden');
+        $('#letterBoxesDisplay').innerHTML = '';
+      }
     }
 
     function renderEmptyBoxes(len) {
-      const el = $('#wordDisplay');
-      if (!el) return;
+      const el = $('#letterBoxesDisplay');
       el.innerHTML = '';
       const container = document.createElement('div');
       container.className = 'letter-boxes';
@@ -880,9 +918,10 @@
     }
 
     function revealWordUI(word) {
-      const el = $('#wordDisplay');
-      if (!el) return;
+      const el = $('#letterBoxesDisplay');
       el.innerHTML = '';
+      $('#secretWordDisplay').classList.add('hidden');
+      
       const container = document.createElement('div');
       container.className = 'letter-boxes';
       
@@ -907,11 +946,11 @@
         el.textContent = msg.text;
       } else {
         if (msg.id === App.myId) el.classList.add('mine');
-        else el.classList.add('others');
+        else el.classList.add('other');
         if (msg.isHint) el.classList.add('hint');
         
         const author = document.createElement('div');
-        author.className = 'msg-author';
+        author.className = 'msg-name';
         author.textContent = msg.name;
         el.appendChild(author);
         
@@ -930,9 +969,7 @@
       appendMessage(payload);
     }
 
-    // ============================================================
-    // СТАРТ
-    // ============================================================
+    /* --- Старт --- */
     document.addEventListener('DOMContentLoaded', initUI);
 
   </script>
