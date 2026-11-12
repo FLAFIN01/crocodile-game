@@ -3,442 +3,376 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-  <title>КРОКОДИЛ · Онлайн-игра</title>
+  <title>Крокодил | Онлайн-игра</title>
   
+  <!-- Шрифты -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
-  <!-- MQTT Библиотека (WebSockets) -->
+  <!-- MQTT Библиотека -->
   <script src="https://cdn.jsdelivr.net/npm/mqtt@5.3.5/dist/mqtt.min.js"></script>
 
   <style>
     /* ============================================================
-       ДИЗАЙН-СИСТЕМА (PREMIUM DARK/LIGHT UI)
+       ДИЗАЙН-СИСТЕМА
        ============================================================ */
     :root {
-      --font-display: 'Unbounded', sans-serif;
-      --font-ui: 'Inter', system-ui, sans-serif;
+      --font-main: 'Nunito', system-ui, sans-serif;
       
-      --bg: #0b0f19;
-      --surface: #151b2b;
-      --surface-hover: #1f293d;
-      --border: #2a3652;
+      /* Светлая тема (по умолчанию) */
+      --bg-body: #f0f4f8;
+      --bg-panel: #ffffff;
+      --bg-panel-hover: #f8fafc;
+      
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      
+      --primary: #10b981; /* Зеленый */
+      --primary-hover: #059669;
+      --primary-light: #d1fae5;
+      
+      --secondary: #3b82f6; /* Синий */
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      
+      --border: #e2e8f0;
+      --shadow-panel: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+    }
+
+    /* Темная тема */
+    [data-theme="dark"] {
+      --bg-body: #0f172a;
+      --bg-panel: #1e293b;
+      --bg-panel-hover: #334155;
       
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       
-      --primary: #6366f1;
-      --primary-hover: #4f46e5;
-      --accent: #f43f5e;
-      --success: #10b981;
-      --warning: #f59e0b;
+      --primary: #10b981;
+      --primary-hover: #34d399;
+      --primary-light: rgba(16, 185, 129, 0.15);
       
-      --shadow-sm: 0 2px 4px rgba(0,0,0,0.3);
-      --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
-      --shadow-lg: 0 12px 32px rgba(0,0,0,0.5);
-      
-      --radius-sm: 8px;
-      --radius-md: 16px;
-      --radius-lg: 24px;
-      
-      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-      --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-    }
-
-    [data-theme="light"] {
-      --bg: #f1f5f9;
-      --surface: #ffffff;
-      --surface-hover: #e2e8f0;
-      --border: #cbd5e1;
-      --text-main: #0f172a;
-      --text-muted: #475569;
-      --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
-      --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
-      --shadow-lg: 0 12px 32px rgba(0,0,0,0.15);
+      --border: #334155;
+      --shadow-panel: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    
+
     body {
-      font-family: var(--font-ui);
-      background: var(--bg);
+      font-family: var(--font-main);
+      background: var(--bg-body);
       color: var(--text-main);
       height: 100dvh;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
       transition: background 0.3s ease, color 0.3s ease;
     }
 
-    #app {
-      height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      padding-bottom: env(safe-area-inset-bottom, 0px);
-    }
-
-    /* Кнопки */
+    /* Утилиты */
+    .hidden { display: none !important; }
     button {
       font-family: inherit; cursor: pointer; border: none; outline: none;
-      border-radius: var(--radius-sm); padding: 12px 20px; font-weight: 600; font-size: 0.95rem;
-      transition: all 0.2s var(--ease-out); display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px;
+      font-weight: 800; font-size: 1rem; border-radius: var(--radius-sm);
+      transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center;
+      min-height: 48px; padding: 0 24px;
     }
     button:active { transform: scale(0.97); }
-    button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-    .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2); }
     .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
-    .btn-accent { background: var(--accent); color: #fff; }
     .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text-main); }
-    .btn-outline:hover { background: var(--surface-hover); }
-    .btn-ghost { background: transparent; color: var(--text-muted); }
-    .btn-ghost:hover { color: var(--text-main); background: var(--surface-hover); }
-
-    /* Инпуты */
+    .btn-outline:hover:not(:disabled) { background: var(--bg-panel-hover); }
+    
     input, select {
-      font-family: inherit; font-size: 1rem; padding: 12px 16px;
-      border: 2px solid var(--border); border-radius: var(--radius-sm);
-      background: var(--surface); color: var(--text-main); outline: none;
-      width: 100%; min-height: 48px; transition: border-color 0.2s ease;
+      font-family: inherit; font-size: 1rem; font-weight: 600;
+      padding: 14px 16px; border: 2px solid var(--border); border-radius: var(--radius-sm);
+      background: var(--bg-panel); color: var(--text-main); outline: none;
+      width: 100%; min-height: 52px; transition: border-color 0.2s ease;
     }
     input:focus, select:focus { border-color: var(--primary); }
 
-    /* Шапка */
-    .header {
+    /* Верхняя панель */
+    .topbar {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 20px; background: var(--surface); border-bottom: 1px solid var(--border);
-      flex-shrink: 0; z-index: 10;
+      padding: 16px 24px; flex-shrink: 0;
     }
-    .logo { font-family: var(--font-display); font-weight: 900; font-size: 1.4rem; letter-spacing: -0.5px; }
-    .logo span { color: var(--accent); }
-    .header-actions { display: flex; gap: 8px; }
-    .icon-btn { width: 44px; height: 44px; padding: 0; border-radius: 50%; background: var(--surface-hover); color: var(--text-main); font-size: 1.2rem; }
-
-    /* Экраны */
-    .screen { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    .hidden { display: none !important; }
+    .logo { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px; }
+    .logo span { color: var(--primary); }
+    .topbar-actions { display: flex; gap: 12px; }
+    .icon-btn { width: 44px; height: 44px; padding: 0; border-radius: 50%; background: var(--bg-panel); color: var(--text-main); box-shadow: var(--shadow-panel); }
 
     /* ============================================================
-       ЛОББИ
+       ЭКРАН ЛОББИ (Стиль Gartic)
        ============================================================ */
-    .lobby-scroll { flex: 1; overflow-y: auto; padding: 24px 20px; }
-    .lobby-inner { max-width: 500px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
-    
-    .hero { text-align: center; margin-bottom: 10px; }
-    .hero h1 { font-family: var(--font-display); font-size: clamp(2rem, 6vw, 3rem); font-weight: 900; line-height: 1.1; margin-bottom: 8px; }
-    .hero p { color: var(--text-muted); font-size: 0.95rem; }
-
-    .card {
-      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
-      padding: 24px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 16px;
+    .lobby-screen {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px; overflow-y: auto;
     }
-    .card h2 { font-size: 1.1rem; font-weight: 600; color: var(--text-main); }
-
-    .form-group { display: flex; flex-direction: column; gap: 8px; }
-    .form-group label { font-size: 0.85rem; font-weight: 500; color: var(--text-muted); }
     
-    .row { display: flex; gap: 12px; align-items: center; }
-    .row > * { flex: 1; }
-
-    .avatar-preview {
-      width: 56px; height: 56px; border-radius: 50%; background: var(--border);
-      overflow: hidden; flex-shrink: 0; border: 2px solid var(--border);
+    .lobby-container {
+      display: flex; gap: 24px; max-width: 1000px; width: 100%; align-items: stretch;
     }
-    .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
 
-    .segmented { display: flex; background: var(--surface-hover); border-radius: var(--radius-sm); padding: 4px; }
-    .segmented button { flex: 1; background: transparent; color: var(--text-muted); padding: 8px; min-height: 40px; border-radius: 6px; font-size: 0.85rem; }
-    .segmented button.active { background: var(--surface); color: var(--text-main); box-shadow: var(--shadow-sm); }
-
-    .player-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
-    .player-chip {
-      display: flex; align-items: center; gap: 12px; padding: 10px 12px;
-      background: var(--surface-hover); border-radius: var(--radius-sm);
+    .panel {
+      background: var(--bg-panel); border-radius: var(--radius-lg); padding: 32px;
+      box-shadow: var(--shadow-panel); flex: 1; display: flex; flex-direction: column;
     }
-    .player-chip .avatar { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; }
-    .player-chip .avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .player-chip .name { flex: 1; font-weight: 500; font-size: 0.95rem; }
+
+    /* Левая панель: Игрок и Создание */
+    .profile-section { display: flex; flex-direction: column; gap: 20px; align-items: center; text-align: center; }
+    .avatar-big {
+      width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--primary);
+      padding: 4px; background: var(--bg-panel); overflow: hidden;
+    }
+    .avatar-big img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
     
-    .badge { font-size: 0.7rem; padding: 4px 8px; border-radius: 99px; font-weight: 600; text-transform: uppercase; }
-    .badge.host { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
-    .badge.me { background: rgba(99, 102, 241, 0.2); color: var(--primary); }
+    .name-input { font-size: 1.2rem; text-align: center; font-weight: 800; }
+    
+    .tabs { display: flex; background: var(--bg-body); border-radius: var(--radius-sm); padding: 6px; margin-top: 10px; }
+    .tab { flex: 1; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; font-weight: 800; color: var(--text-muted); transition: 0.2s; }
+    .tab.active { background: var(--bg-panel); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+    .form-group { display: flex; flex-direction: column; gap: 8px; text-align: left; }
+    .form-group label { font-size: 0.9rem; font-weight: 700; color: var(--text-muted); margin-left: 4px; }
+    
+    .row-segmented { display: flex; gap: 8px; }
+    .row-segmented button { flex: 1; background: var(--bg-body); color: var(--text-muted); border: 2px solid transparent; font-size: 0.9rem; min-height: 40px; border-radius: 8px; }
+    .row-segmented button.active { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+
+    /* Правая панель: Правила */
+    .rules-section { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 16px; background: var(--primary-light); }
+    .rules-section h2 { color: var(--primary-hover); font-size: 1.5rem; }
+    .rules-section p { font-weight: 600; color: var(--text-main); line-height: 1.5; }
+    .rules-img { font-size: 4rem; margin-bottom: 10px; }
+
+    /* Ожидание в лобби */
+    .waiting-room { display: flex; flex-direction: column; gap: 20px; }
+    .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
+    .player-card {
+      background: var(--bg-body); border-radius: var(--radius-md); padding: 16px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative;
+    }
+    .player-card img { width: 48px; height: 48px; border-radius: 50%; }
+    .player-card .name { font-weight: 800; font-size: 0.9rem; text-align: center; word-break: break-word; }
+    .player-card .host-badge { position: absolute; top: -8px; right: -8px; background: var(--warning); color: #fff; font-size: 0.7rem; padding: 2px 8px; border-radius: 99px; font-weight: 800; }
 
     /* ============================================================
        ИГРОВОЙ ЭКРАН
        ============================================================ */
-    .game-layout { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .game-screen { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 20px; gap: 16px; }
     
     .game-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 20px; background: var(--surface); border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      background: var(--bg-panel); padding: 16px 24px; border-radius: var(--radius-md); box-shadow: var(--shadow-panel);
     }
-    .round-info { display: flex; align-items: center; gap: 12px; }
-    .round-number { font-weight: 600; font-size: 0.9rem; color: var(--text-muted); }
-    .timer {
-      font-family: var(--font-display); font-weight: 700; font-size: 1.2rem;
-      background: var(--surface-hover); padding: 4px 12px; border-radius: 99px;
+    .game-info { display: flex; gap: 20px; align-items: center; }
+    .info-badge { font-weight: 800; color: var(--text-muted); }
+    .timer { font-size: 1.5rem; font-weight: 900; color: var(--primary); }
+    .timer.warning { color: var(--danger); animation: pulse 1s infinite; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+
+    .role-tag { padding: 8px 16px; border-radius: 99px; font-weight: 900; font-size: 0.9rem; }
+    .role-tag.explainer { background: var(--primary); color: #fff; }
+    .role-tag.guesser { background: var(--secondary); color: #fff; }
+
+    .game-main { flex: 1; display: flex; gap: 16px; overflow: hidden; }
+
+    /* Зона слова */
+    .word-panel {
+      flex: 0 0 35%; background: var(--bg-panel); border-radius: var(--radius-md);
+      box-shadow: var(--shadow-panel); display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 24px; text-align: center;
     }
-    .timer.warning { color: var(--accent); background: rgba(244, 63, 94, 0.1); animation: pulse 1s infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    .word-panel .label { font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; font-size: 0.9rem; }
+    .secret-word { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; color: var(--primary); word-break: break-word; line-height: 1.1; }
+    .word-hint { margin-top: 20px; font-weight: 600; color: var(--text-muted); font-size: 0.95rem; }
     
-    .role-badge { font-size: 0.8rem; font-weight: 600; padding: 6px 12px; border-radius: 99px; }
-    .role-badge.explainer { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
-    .role-badge.guesser { background: rgba(16, 185, 129, 0.15); color: var(--success); }
-
-    .game-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-
-    /* Зона со словом */
-    .word-zone {
-      background: var(--surface); padding: 24px 20px; text-align: center;
-      border-bottom: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center;
-      min-height: 180px;
-    }
-    .word-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px; }
-    
-    .secret-word-display {
-      font-family: var(--font-display); font-weight: 900; font-size: clamp(2rem, 6vw, 3rem);
-      color: var(--primary); margin-bottom: 12px; word-break: break-word;
-      animation: popIn 0.4s var(--ease-spring);
-    }
-    @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-    .letter-boxes { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+    .letter-boxes { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
     .letter-box {
-      width: 36px; height: 48px; background: var(--surface-hover); border-radius: var(--radius-sm);
+      width: 40px; height: 50px; background: var(--bg-body); border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-display); font-weight: 700; font-size: 1.2rem;
-      transition: all 0.4s var(--ease-spring);
+      font-size: 1.5rem; font-weight: 900; color: var(--text-main); transition: 0.3s;
     }
-    .letter-box.revealed { background: var(--success); color: #fff; transform: rotateY(360deg); }
+    .letter-box.revealed { background: var(--primary); color: #fff; }
 
-    .game-hint {
-      margin-top: 16px; font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;
-      max-width: 90%;
+    /* Зона чата */
+    .chat-panel {
+      flex: 1; background: var(--bg-panel); border-radius: var(--radius-md);
+      box-shadow: var(--shadow-panel); display: flex; flex-direction: column; overflow: hidden;
     }
-    .game-hint strong { color: var(--text-main); }
-
-    /* Чат */
-    .chat-zone { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
-    .chat-messages {
-      flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px;
+    .chat-history {
+      flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
       scroll-behavior: smooth;
     }
-    .msg {
-      max-width: 85%; padding: 12px 16px; border-radius: var(--radius-md);
-      background: var(--surface); border: 1px solid var(--border);
-      font-size: 0.95rem; line-height: 1.4; word-break: break-word;
-      animation: slideIn 0.3s var(--ease-out); align-self: flex-start;
+    .message {
+      max-width: 80%; padding: 12px 16px; border-radius: var(--radius-sm);
+      background: var(--bg-body); font-weight: 600; line-height: 1.4; word-break: break-word;
+      animation: slideIn 0.2s ease-out;
     }
     @keyframes slideIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     
-    .msg.self { align-self: flex-end; background: var(--primary); border-color: var(--primary); color: #fff; }
-    .msg.hint { background: var(--surface-hover); border-left: 4px solid var(--warning); }
-    .msg.system { align-self: center; background: transparent; border: none; color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 4px; }
+    .message.mine { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
+    .message.others { align-self: flex-start; border-bottom-left-radius: 4px; }
+    .message.system { align-self: center; background: transparent; color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 4px; }
+    .message.hint { border-left: 4px solid var(--warning); background: var(--bg-panel-hover); }
     
-    .msg-author { font-size: 0.75rem; font-weight: 600; opacity: 0.6; margin-bottom: 4px; }
-    .msg-tag { font-size: 0.7rem; font-weight: 700; color: var(--warning); text-transform: uppercase; margin-bottom: 4px; display: block; }
+    .msg-author { font-size: 0.8rem; font-weight: 800; color: var(--text-muted); margin-bottom: 4px; }
+    .message.mine .msg-author { color: rgba(255,255,255,0.7); }
 
-    /* Поле ввода */
     .chat-input-area {
-      padding: 12px 20px; background: var(--surface); border-top: 1px solid var(--border);
-      display: flex; gap: 12px; align-items: flex-end; flex-shrink: 0;
-      padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-      transition: transform 0.2s ease;
+      padding: 16px; border-top: 2px solid var(--border); display: flex; gap: 12px;
+      background: var(--bg-panel); padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
     }
     .chat-input-area input { flex: 1; border-radius: 99px; padding-left: 20px; }
-    .chat-input-area button { width: 48px; height: 48px; padding: 0; border-radius: 50%; flex-shrink: 0; }
+    .chat-input-area button { width: 52px; height: 52px; padding: 0; border-radius: 50%; flex-shrink: 0; font-size: 1.2rem; }
 
-    /* Модальное окно Правил */
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
-      display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px;
-      opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
-    }
-    .modal-overlay.active { opacity: 1; pointer-events: auto; }
-    .modal {
-      background: var(--surface); border-radius: var(--radius-lg); padding: 32px; max-width: 500px; width: 100%;
-      box-shadow: var(--shadow-lg); transform: translateY(20px); transition: transform 0.3s var(--ease-spring);
-      max-height: 85vh; overflow-y: auto;
-    }
-    .modal-overlay.active .modal { transform: translateY(0); }
-    .modal h2 { font-family: var(--font-display); margin-bottom: 20px; font-size: 1.8rem; }
-    .modal p { margin-bottom: 16px; line-height: 1.6; color: var(--text-muted); }
-    .modal ul { margin-left: 20px; margin-bottom: 20px; color: var(--text-muted); line-height: 1.6; }
-    .modal strong { color: var(--text-main); }
-    .modal .close-btn { margin-top: 10px; width: 100%; }
-
-    /* Тосты */
-    .toast-container { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
-    .toast {
-      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
-      padding: 12px 20px; font-size: 0.9rem; font-weight: 500; box-shadow: var(--shadow-md);
-      animation: toastIn 0.3s var(--ease-spring), toastOut 0.3s ease 2.7s forwards;
-    }
-    .toast.error { border-color: var(--accent); color: var(--accent); }
-    .toast.success { border-color: var(--success); color: var(--success); }
-    @keyframes toastIn { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    @keyframes toastOut { to { transform: translateY(-10px); opacity: 0; } }
-
-    #confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 900; }
-
-    /* Адаптивность (Планшет/ПК) */
-    @media (min-width: 768px) {
-      .game-content { flex-direction: row; }
-      .word-zone { width: 40%; border-bottom: none; border-right: 1px solid var(--border); min-height: 100%; }
-      .chat-zone { flex: 1; }
-      .letter-box { width: 44px; height: 56px; font-size: 1.5rem; }
+    /* Мобильная адаптация */
+    @media (max-width: 768px) {
+      .lobby-container { flex-direction: column; }
+      .rules-section { display: none; } /* Скрываем правила на телефоне, чтобы не мешали */
+      .game-main { flex-direction: column; }
+      .word-panel { flex: 0 0 auto; padding: 20px; }
+      .letter-box { width: 32px; height: 42px; font-size: 1.2rem; }
     }
   </style>
 </head>
-<body data-theme="dark">
-  <div id="app">
+<body data-theme="light">
+  
+  <!-- Верхняя панель -->
+  <header class="topbar">
+    <div class="logo">КРОКО<span>ДИЛ</span></div>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="themeBtn" title="Сменить тему">🌙</button>
+    </div>
+  </header>
+
+  <!-- ЭКРАН ЛОББИ -->
+  <main class="lobby-screen" id="lobbyScreen">
     
-    <!-- Шапка -->
-    <header class="header">
-      <div class="logo">КРОКО<span>ДИЛ</span></div>
-      <div class="header-actions">
-        <button class="icon-btn" id="rulesBtn" title="Правила игры">?</button>
-        <button class="icon-btn" id="themeBtn" title="Сменить тему">◐</button>
-      </div>
-    </header>
-
-    <!-- ЭКРАН ЛОББИ -->
-    <section class="screen" id="screen-lobby">
-      <div class="lobby-scroll">
-        <div class="lobby-inner">
-          
-          <div class="hero">
-            <h1>Игра в ассоциации</h1>
-            <p>Объясняй слова, угадывай и получай очки!</p>
-          </div>
-
-          <!-- Профиль -->
-          <div class="card">
-            <h2>Ваш профиль</h2>
-            <div class="row">
-              <input type="text" id="nicknameInput" placeholder="Ваш никнейм" maxlength="15">
-              <div class="avatar-preview" id="avatarPreview"></div>
-            </div>
-          </div>
-
-          <!-- Создать / Войти -->
-          <div id="lobbyControls">
-            <div class="card" id="createCard" style="margin-bottom: 20px;">
-              <h2>Создать комнату</h2>
-              <div class="form-group">
-                <label>Максимум игроков</label>
-                <div class="segmented" id="maxPlayersSeg">
-                  <button data-val="4" class="active">4</button>
-                  <button data-val="8">8</button>
-                  <button data-val="16">16</button>
-                  <button data-val="32">32</button>
-                </div>
-              </div>
-              <div class="form-group">
-                <label>Время раунда</label>
-                <div class="segmented" id="roundTimeSeg">
-                  <button data-val="60">60 сек</button>
-                  <button data-val="90" class="active">90 сек</button>
-                  <button data-val="120">120 сек</button>
-                </div>
-              </div>
-              <div class="form-group">
-                <label>Слова</label>
-                <select id="categorySelect">
-                  <option value="general">Разные (Общие)</option>
-                  <option value="cinema">Кино и Игры</option>
-                  <option value="abstract">Сложные / Абстрактные</option>
-                </select>
-              </div>
-              <button class="btn-primary" id="createRoomBtn">Создать</button>
-            </div>
-
-            <div class="card" id="joinCard">
-              <h2>Присоединиться</h2>
-              <div class="form-group">
-                <input type="text" id="joinCodeInput" placeholder="Код (например CROC-1234)" style="text-transform: uppercase;">
-              </div>
-              <button class="btn-accent" id="joinRoomBtn">Войти в комнату</button>
-            </div>
-          </div>
-
-          <!-- Лобби в комнате -->
-          <div class="card hidden" id="roomLobby">
-            <h2 style="display: flex; justify-content: space-between;">
-              Игроки <span id="playerCount" style="color: var(--text-muted); font-size: 0.9rem;">(1/8)</span>
-            </h2>
-            <div class="player-list" id="playerList"></div>
-            
-            <div style="display: flex; gap: 12px; margin-top: 10px;">
-              <button class="btn-outline" id="copyInviteBtn" style="flex: 1;">Пригласить</button>
-              <button class="btn-ghost" id="leaveRoomBtn">Выйти</button>
-            </div>
-            
-            <button class="btn-primary" id="startGameBtn" style="margin-top: 10px;">Начать игру</button>
-            <p id="waitingText" class="hidden" style="text-align: center; color: var(--text-muted); margin-top: 10px;">Ждем, пока хост начнет игру...</p>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- ЭКРАН ИГРЫ -->
-    <section class="screen hidden" id="screen-game">
-      <div class="game-layout">
-        
-        <div class="game-header">
-          <div class="round-info">
-            <span class="round-number" id="roundLabel">Раунд 1</span>
-            <span class="timer" id="timerDisplay">90</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <span class="role-badge guesser" id="roleBadge">Отгадываю</span>
-            <button class="btn-ghost icon-btn" id="leaveGameBtn" title="Выйти">✕</button>
-          </div>
+    <!-- Форма входа -->
+    <div class="lobby-container" id="entryView">
+      
+      <!-- Левая панель: Профиль и Создание -->
+      <div class="panel">
+        <div class="profile-section">
+          <div class="avatar-big" id="avatarPreview"></div>
+          <input type="text" id="nicknameInput" class="name-input" placeholder="Ваш никнейм" maxlength="15">
         </div>
 
-        <div class="game-content">
-          
-          <!-- Зона слова -->
-          <div class="word-zone">
-            <div class="word-label" id="wordLabel">Секретное слово</div>
-            <div id="wordContainer"></div>
-            <div class="game-hint" id="gameHint">
-              Пишите ваши догадки <strong>в чат</strong>.
+        <div class="tabs">
+          <div class="tab active" id="tabCreate">Создать</div>
+          <div class="tab" id="tabJoin">Войти</div>
+        </div>
+
+        <!-- Создание комнаты -->
+        <div id="createForm" style="display: flex; flex-direction: column; gap: 16px;">
+          <div class="form-group">
+            <label>Лимит игроков</label>
+            <div class="row-segmented" id="maxPlayersSeg">
+              <button data-val="4" class="active">4</button>
+              <button data-val="8">8</button>
+              <button data-val="16">16</button>
             </div>
           </div>
-
-          <!-- Зона чата -->
-          <div class="chat-zone">
-            <div class="chat-messages" id="chatMessages"></div>
-            <div class="chat-input-area">
-              <input type="text" id="chatInput" placeholder="Введите текст..." maxlength="100" autocomplete="off">
-              <button class="btn-primary" id="sendBtn">↑</button>
+          <div class="form-group">
+            <label>Время раунда</label>
+            <div class="row-segmented" id="roundTimeSeg">
+              <button data-val="60">60с</button>
+              <button data-val="90" class="active">90с</button>
+              <button data-val="120">120с</button>
             </div>
           </div>
+          <div class="form-group">
+            <label>Категория слов</label>
+            <select id="categorySelect">
+              <option value="general">Разные</option>
+              <option value="cinema">Кино и Игры</option>
+              <option value="abstract">Абстрактные</option>
+            </select>
+          </div>
+          <button class="btn-primary" id="btnCreateRoom" style="margin-top: 10px;">СОЗДАТЬ КОМНАТУ</button>
+        </div>
 
+        <!-- Подключение к комнате -->
+        <div id="joinForm" style="display: none; flex-direction: column; gap: 16px;">
+          <div class="form-group">
+            <label>Код комнаты</label>
+            <input type="text" id="joinCodeInput" placeholder="CROC-1234" style="text-transform: uppercase; text-align: center; font-size: 1.2rem; letter-spacing: 2px;">
+          </div>
+          <button class="btn-primary" id="btnJoinRoom" style="margin-top: 10px;">ВОЙТИ</button>
         </div>
       </div>
-    </section>
 
-    <!-- Модалка Правил -->
-    <div class="modal-overlay" id="rulesModal">
-      <div class="modal">
-        <h2>Как играть?</h2>
-        <p><strong>Крокодил</strong> — это игра на объяснение слов ассоциациями.</p>
-        <ul>
-          <li>В каждом раунде выбирается один <strong>Ведущий</strong>. Он видит секретное слово.</li>
-          <li>Задача Ведущего — написать в чат намеки, чтобы остальные угадали слово. <strong>Нельзя</strong> использовать однокоренные слова!</li>
-          <li>Задача остальных игроков — читать намеки и писать свои догадки в чат.</li>
-          <li>Как только кто-то пишет правильное слово в чат, он получает <strong>+100 очков</strong> (плюс бонус за скорость), а Ведущий получает <strong>+50 очков</strong>.</li>
-          <li>Если время выходит, слово раскрывается, и очки никому не начисляются.</li>
-        </ul>
-        <button class="btn-primary close-btn" id="closeRulesBtn">Понятно!</button>
+      <!-- Правая панель: Правила -->
+      <div class="panel rules-section">
+        <div class="rules-img">🐊</div>
+        <h2>КАК ИГРАТЬ</h2>
+        <p>Ведущий видит слово и объясняет его ассоциациями в чате.</p>
+        <p>Остальные игроки пытаются угадать слово и пишут догадки в чат.</p>
+        <p>Угадавший получает очки, а ведущий получает баллы за хорошее объяснение!</p>
       </div>
     </div>
 
-    <div class="toast-container" id="toastContainer"></div>
-    <canvas id="confetti-canvas"></canvas>
-  </div>
+    <!-- Ожидание в комнате -->
+    <div class="panel waiting-room hidden" id="lobbyView" style="max-width: 600px; width: 100%;">
+      <h2 style="text-align: center; margin-bottom: 10px;">Комната: <span id="roomCodeDisplay" style="color: var(--primary);">CROC-0000</span></h2>
+      <p style="text-align: center; color: var(--text-muted); font-weight: 600; margin-bottom: 20px;">Ожидаем игроков...</p>
+      
+      <div class="player-grid" id="playerList"></div>
+      
+      <div style="display: flex; gap: 12px; margin-top: 24px;">
+        <button class="btn-outline" id="btnCopyLink" style="flex: 1;">Скопировать ссылку</button>
+        <button class="btn-outline" id="btnLeaveRoom" style="color: var(--danger); border-color: var(--danger);">Выйти</button>
+      </div>
+      
+      <button class="btn-primary" id="btnStartGame" style="margin-top: 12px; width: 100%; font-size: 1.1rem; height: 56px;">НАЧАТЬ ИГРУ</button>
+      <p id="waitingHostText" class="hidden" style="text-align: center; color: var(--text-muted); font-weight: 600; margin-top: 20px;">Ждем, пока хост начнет игру...</p>
+    </div>
+  </main>
+
+  <!-- ЭКРАН ИГРЫ -->
+  <main class="game-screen hidden" id="gameScreen">
+    
+    <div class="game-header">
+      <div class="game-info">
+        <span class="info-badge" id="roundDisplay">Раунд 1</span>
+        <span class="timer" id="timerDisplay">90</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <span class="role-tag guesser" id="roleTag">ВЫ ОТГАДЫВАЕТЕ</span>
+        <button class="icon-btn" id="btnLeaveGame" style="color: var(--danger);">✕</button>
+      </div>
+    </div>
+
+    <div class="game-main">
+      
+      <!-- Панель слова -->
+      <div class="word-panel">
+        <div class="label" id="wordLabel">СЕКРЕТНОЕ СЛОВО</div>
+        <div id="wordDisplay" style="width: 100%;"></div>
+        <div class="word-hint" id="wordHint"></div>
+      </div>
+
+      <!-- Панель чата -->
+      <div class="chat-panel">
+        <div class="chat-history" id="chatHistory"></div>
+        <div class="chat-input-area">
+          <input type="text" id="chatInput" placeholder="Введите текст..." maxlength="100" autocomplete="off">
+          <button class="btn-primary" id="btnSendChat">↑</button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Контейнер для уведомлений -->
+  <div id="toastContainer" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 1000; pointer-events: none;"></div>
 
   <script>
     // ============================================================
@@ -459,9 +393,12 @@
       isHost: false,
       myId: '',
       myName: '',
+      
       players: new Map(),
       settings: { maxPlayers: 8, roundTime: 90, category: 'general' },
+      
       round: { number: 1, explainerId: null, wordLength: 0, endTime: 0, isActive: false },
+      
       _secretWord: '',
       _hostTimer: null,
       _clientTimer: null
@@ -473,18 +410,25 @@
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) => [...document.querySelectorAll(sel)];
     
-    function toast(msg, type = '') {
+    function toast(msg, type = 'info') {
       const container = $('#toastContainer');
       if (!container) return;
       const el = document.createElement('div');
       el.className = `toast ${type}`;
       el.textContent = msg;
+      el.style.padding = '12px 24px';
+      el.style.background = type === 'error' ? 'var(--danger)' : 'var(--bg-panel)';
+      el.style.color = type === 'error' ? '#fff' : 'var(--text-main)';
+      el.style.borderRadius = '12px';
+      el.style.fontWeight = '800';
+      el.style.boxShadow = 'var(--shadow-panel)';
+      el.style.animation = 'slideIn 0.3s ease-out';
       container.appendChild(el);
       setTimeout(() => el.remove(), 3000);
     }
 
     function getAvatarUrl(seed) {
-      return `https://api.dicebear.com/9.x/bottts/svg?seed=${encodeURIComponent(seed || 'player')}&backgroundColor=6366f1,10b981,f43f5e,f59e0b&radius=50`;
+      return `https://api.dicebear.com/9.x/bottts/svg?seed=${encodeURIComponent(seed || 'player')}&backgroundColor=10b981,3b82f6,f59e0b&radius=50`;
     }
 
     function normalize(str) {
@@ -492,188 +436,268 @@
     }
 
     // ============================================================
-    // КОНФЕТТИ
+    // UI ЛОГИКА
     // ============================================================
-    const canvas = $('#confetti-canvas');
-    const ctx = canvas ? canvas.getContext('2d') : null;
-    let particles = [];
-    let confettiActive = false;
+    function initUI() {
+      // Тема
+      const savedTheme = localStorage.getItem('croc_theme') || 'light';
+      document.body.dataset.theme = savedTheme;
+      $('#themeBtn').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+      
+      $('#themeBtn').addEventListener('click', () => {
+        const next = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.body.dataset.theme = next;
+        localStorage.setItem('croc_theme', next);
+        $('#themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
+      });
 
-    function resizeCanvas() {
-      if (canvas) { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+      // Никнейм и аватар
+      const nickInput = $('#nicknameInput');
+      nickInput.value = 'Игрок' + Math.floor(100 + Math.random() * 900);
+      const updateAvatar = () => {
+        $('#avatarPreview').innerHTML = `<img src="${getAvatarUrl(nickInput.value)}">`;
+      };
+      nickInput.addEventListener('input', updateAvatar);
+      updateAvatar();
 
-    function fireConfetti() {
-      if (!ctx) return;
-      for (let i = 0; i < 150; i++) {
-        particles.push({
-          x: canvas.width / 2 + (Math.random() - 0.5) * 200, y: canvas.height / 3,
-          vx: (Math.random() - 0.5) * 15, vy: (Math.random() - 1) * 15 - 5,
-          size: Math.random() * 8 + 4,
-          color: ['#6366f1', '#10b981', '#f43f5e', '#f59e0b'][Math.floor(Math.random() * 4)],
-          rot: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.2, life: 1
+      // Табы
+      $('#tabCreate').addEventListener('click', () => {
+        $('#tabCreate').classList.add('active');
+        $('#tabJoin').classList.remove('active');
+        $('#createForm').style.display = 'flex';
+        $('#joinForm').style.display = 'none';
+      });
+      $('#tabJoin').addEventListener('click', () => {
+        $('#tabJoin').classList.add('active');
+        $('#tabCreate').classList.remove('active');
+        $('#createForm').style.display = 'none';
+        $('#joinForm').style.display = 'flex';
+      });
+
+      // Сегменты настроек
+      function setupSegmented(id, callback) {
+        $('#' + id).addEventListener('click', (e) => {
+          if (e.target.tagName !== 'BUTTON') return;
+          $$(`#${id} button`).forEach(b => b.classList.remove('active'));
+          e.target.classList.add('active');
+          callback(parseInt(e.target.dataset.val));
         });
       }
-      if (!confettiActive) { confettiActive = true; requestAnimationFrame(updateConfetti); }
-    }
+      setupSegmented('maxPlayersSeg', val => App.settings.maxPlayers = val);
+      setupSegmented('roundTimeSeg', val => App.settings.roundTime = val);
+      
+      $('#categorySelect').addEventListener('change', e => App.settings.category = e.target.value);
 
-    function updateConfetti() {
-      if (!ctx) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      let alive = false;
-      particles.forEach(p => {
-        p.vy += 0.4; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life -= 0.01;
-        if (p.life > 0) {
-          alive = true;
-          ctx.save(); ctx.globalAlpha = Math.max(0, p.life);
-          ctx.translate(p.x, p.y); ctx.rotate(p.rot);
-          ctx.fillStyle = p.color; ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
-          ctx.restore();
-        }
+      // Кнопки Создать / Войти
+      $('#btnCreateRoom').addEventListener('click', () => {
+        const name = nickInput.value.trim();
+        if (!name) return toast('Введите никнейм', 'error');
+        const code = 'CROC-' + Math.floor(1000 + Math.random() * 9000);
+        startNetwork(code, true, name);
       });
-      particles = particles.filter(p => p.life > 0);
-      if (alive) requestAnimationFrame(updateConfetti);
-      else { confettiActive = false; ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+      $('#btnJoinRoom').addEventListener('click', () => {
+        const name = nickInput.value.trim();
+        let code = $('#joinCodeInput').value.trim().toUpperCase();
+        if (!name) return toast('Введите никнейм', 'error');
+        if (!code) return toast('Введите код', 'error');
+        if (!code.startsWith('CROC-')) code = 'CROC-' + code;
+        startNetwork(code, false, name);
+      });
+
+      // Кнопки в комнате
+      $('#btnCopyLink').addEventListener('click', () => {
+        const url = `${location.origin}${location.pathname}?room=${App.roomCode}`;
+        navigator.clipboard.writeText(url).then(() => toast('Ссылка скопирована!'));
+      });
+
+      const leaveRoom = () => {
+        if (App.client) App.client.end();
+        location.reload();
+      };
+      $('#btnLeaveRoom').addEventListener('click', leaveRoom);
+      $('#btnLeaveGame').addEventListener('click', leaveRoom);
+
+      $('#btnStartGame').addEventListener('click', () => {
+        startGame();
+      });
+
+      // Чат
+      const sendChat = () => {
+        const input = $('#chatInput');
+        const text = input.value.trim();
+        if (!text) return;
+
+        if (App.isHost) {
+          handleHostChat(App.myId, text);
+        } else {
+          publish(`croc_room_${App.roomCode}`, { type: 'chat', id: App.myId, name: App.myName, text });
+        }
+        input.value = '';
+      };
+
+      $('#btnSendChat').addEventListener('click', sendChat);
+      $('#chatInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') sendChat();
+      });
+
+      // Проверка URL
+      const params = new URLSearchParams(location.search);
+      if (params.get('room')) {
+        $('#joinCodeInput').value = params.get('room').toUpperCase();
+        $('#tabJoin').click();
+      }
+      
+      // Мобильная клавиатура
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', () => {
+          const vv = window.visualViewport;
+          const kbOpen = window.innerHeight - vv.height > 100;
+          const area = $('.chat-input-area');
+          if (area) {
+            area.style.transform = kbOpen ? `translateY(-${window.innerHeight - vv.height - vv.offsetTop}px)` : 'none';
+          }
+        });
+      }
     }
 
     // ============================================================
     // СЕТЬ (MQTT)
     // ============================================================
-    function initNetwork(roomCode, isHost, name) {
-      App.roomCode = roomCode;
+    function publish(topic, payload) {
+      if (App.client && App.client.connected) {
+        App.client.publish(topic, JSON.stringify(payload));
+      }
+    }
+
+    function startNetwork(code, isHost, name) {
+      App.roomCode = code;
       App.isHost = isHost;
       App.myName = name;
-      App.myId = (isHost ? 'HOST_' : 'USER_') + Math.random().toString(36).substring(2, 8);
-      
-      const topicRoom = `croc_game_v9_${roomCode}`;
+      App.myId = (isHost ? 'HOST_' : 'P_') + Math.random().toString(36).substring(2, 8);
+
+      const topicRoom = `croc_room_${code}`;
       const topicPrivate = `${topicRoom}/p_${App.myId}`;
 
-      // Подключаемся к публичному брокеру EMQX (WebSockets)
-      App.client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
-        clientId: App.myId,
-        keepalive: 60,
-        clean: true
-      });
+      App.client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', { clientId: App.myId });
 
       App.client.on('connect', () => {
-        console.log('MQTT Connected');
         App.client.subscribe(topicRoom);
         if (!isHost) App.client.subscribe(topicPrivate);
 
         if (isHost) {
-          // Хост добавляет себя в список
           App.players.set(App.myId, { id: App.myId, name: App.myName, avatar: getAvatarUrl(App.myName), score: 0, isHost: true });
           broadcastState();
-          $('#lobbyControls').classList.add('hidden');
-          $('#roomLobby').classList.remove('hidden');
-          $('#startGameBtn').classList.remove('hidden');
-          $('#waitingText').classList.add('hidden');
-          toast('Комната создана!', 'success');
+          showLobbyView();
         } else {
-          // Клиент представляется
-          App.client.publish(topicRoom, JSON.stringify({ type: 'hello', id: App.myId, name: App.myName, avatar: getAvatarUrl(App.myName) }));
-          $('#lobbyControls').classList.add('hidden');
-          $('#roomLobby').classList.remove('hidden');
-          $('#startGameBtn').classList.add('hidden');
-          $('#waitingText').classList.remove('hidden');
-          toast('Вы в комнате!', 'success');
+          publish(topicRoom, { type: 'hello', id: App.myId, name: App.myName, avatar: getAvatarUrl(App.myName) });
+          showLobbyView();
         }
       });
 
-      App.client.on('message', (topic, message) => {
+      App.client.on('message', (topic, msg) => {
         let data;
-        try { data = JSON.parse(message.toString()); } catch(e) { return; }
+        try { data = JSON.parse(msg.toString()); } catch(e) { return; }
         
-        // Игнорируем собственные broadcast-сообщения (защита от эха)
-        if (data.id === App.myId && data.type !== 'state' && data.type !== 'chat') return;
-
-        if (isHost) handleHostReceive(data, topicRoom, topicPrivate);
-        else handleClientReceive(data);
-      });
-      
-      App.client.on('error', (err) => {
-        console.error(err);
-        toast('Ошибка сети. Проверьте подключение.', 'error');
+        if (isHost) handleHostData(data, topicRoom);
+        else handleClientData(data);
       });
 
-      // Обработка закрытия вкладки
+      App.client.on('error', () => toast('Ошибка сети', 'error'));
+
       window.addEventListener('beforeunload', () => {
-        if (App.client && App.client.connected) {
-          App.client.publish(topicRoom, JSON.stringify({ type: 'leave', id: App.myId }));
+        if (App.client) {
+          publish(topicRoom, { type: 'leave', id: App.myId });
           App.client.end();
         }
       });
     }
 
+    function showLobbyView() {
+      $('#entryView').classList.add('hidden');
+      $('#lobbyView').classList.remove('hidden');
+      $('#roomCodeDisplay').textContent = App.roomCode;
+      
+      if (App.isHost) {
+        $('#btnStartGame').classList.remove('hidden');
+        $('#waitingHostText').classList.add('hidden');
+      } else {
+        $('#btnStartGame').classList.add('hidden');
+        $('#waitingHostText').classList.remove('hidden');
+      }
+    }
+
     // ============================================================
-    // ЛОГИКА ХОСТА (СЕРВЕР)
+    // ЛОГИКА ХОСТА
     // ============================================================
-    function handleHostReceive(data, topicRoom, topicPrivate) {
+    function handleHostData(data, topicRoom) {
       if (data.type === 'hello') {
         if (App.players.size >= App.settings.maxPlayers) return;
         App.players.set(data.id, { id: data.id, name: data.name, avatar: data.avatar, score: 0, isHost: false });
-        broadcastState(topicRoom);
-        addSystemMsg(`${data.name} присоединился к игре.`, topicRoom);
+        broadcastState();
+        addSystemMsg(`${data.name} присоединился`, topicRoom);
       }
       
       if (data.type === 'chat') {
-        const player = App.players.get(data.id);
-        if (!player) return;
-
-        // Проверка на угадывание
-        if (App.round.isActive && data.id !== App.round.explainerId) {
-          if (normalize(data.text) === normalize(App._secretWord)) {
-            endRound('guessed', data.id, topicRoom);
-            return;
-          }
-        }
-
-        const payload = { type: 'chat', id: data.id, name: data.name, text: data.text, isHint: data.id === App.round.explainerId };
-        App.client.publish(topicRoom, JSON.stringify(payload));
-        appendChatMsg(payload);
+        handleHostChat(data.id, data.text);
       }
 
       if (data.type === 'leave') {
         const p = App.players.get(data.id);
         if (p) {
           App.players.delete(data.id);
-          broadcastState(topicRoom);
-          addSystemMsg(`${p.name} покинул игру.`, topicRoom);
+          broadcastState();
+          addSystemMsg(`${p.name} вышел`, topicRoom);
           if (App.round.explainerId === data.id && App.round.isActive) endRound('timeout', null, topicRoom);
         }
       }
     }
 
-    function broadcastState(topicRoom) {
+    function handleHostChat(id, text) {
+      const topicRoom = `croc_room_${App.roomCode}`;
+      const player = App.players.get(id);
+      if (!player) return;
+
+      if (App.round.isActive && id !== App.round.explainerId) {
+        if (normalize(text) === normalize(App._secretWord)) {
+          endRound('guessed', id, topicRoom);
+          return;
+        }
+      }
+
+      const isHint = id === App.round.explainerId;
+      const payload = { type: 'chat', id, name: player.name, text, isHint };
+      publish(topicRoom, payload);
+      appendMessage(payload);
+    }
+
+    function broadcastState() {
       if (!App.isHost) return;
-      const state = {
+      const payload = {
         type: 'state',
-        id: 'server',
         players: [...App.players.values()],
         settings: App.settings,
         round: App.round
       };
-      App.client.publish(topicRoom, JSON.stringify(state));
-      renderState(state);
+      publish(`croc_room_${App.roomCode}`, payload);
+      updateLobbyUI();
     }
 
-    function startGame(topicRoom, topicPrivate) {
-      if (!App.isHost || App.players.size < 2) return toast('Нужно хотя бы 2 игрока', 'error');
+    function startGame() {
+      if (App.players.size < 2) return toast('Нужно минимум 2 игрока', 'error');
       
       App.players.forEach(p => p.score = 0);
       App.round.number = 1;
       App.round.explainerId = null;
       
-      $('#screen-lobby').classList.add('hidden');
-      $('#screen-game').classList.remove('hidden');
-      $('#chatMessages').innerHTML = '';
+      $('#lobbyScreen').classList.add('hidden');
+      $('#gameScreen').classList.remove('hidden');
+      $('#chatHistory').innerHTML = '';
       
-      startRound(topicRoom, topicPrivate);
+      startRound();
     }
 
-    function startRound(topicRoom, topicPrivate) {
+    function startRound() {
       const playerIds = [...App.players.keys()];
       let nextExplainerId = playerIds[0];
       if (App.round.explainerId && playerIds.includes(App.round.explainerId)) {
@@ -692,21 +716,20 @@
         isActive: true
       };
 
-      broadcastState(topicRoom);
+      broadcastState();
       
-      // Отправляем слово ведущему в приватный топик
       if (nextExplainerId === App.myId) {
         showWordUI(App._secretWord);
       } else {
-        App.client.publish(`${topicRoom}/p_${nextExplainerId}`, JSON.stringify({ type: 'secret_word', word: App._secretWord }));
+        publish(`croc_room_${App.roomCode}/p_${nextExplainerId}`, { type: 'secret', word: App._secretWord });
       }
 
       clearTimeout(App._hostTimer);
       App._hostTimer = setTimeout(() => {
-        if (App.round.isActive) endRound('timeout', null, topicRoom);
+        if (App.round.isActive) endRound('timeout', null, `croc_room_${App.roomCode}`);
       }, App.settings.roundTime * 1000);
 
-      addSystemMsg(`Раунд ${App.round.number}. Ведущий: ${App.players.get(nextExplainerId).name}`, topicRoom);
+      addSystemMsg(`Раунд ${App.round.number}. Ведущий: ${App.players.get(nextExplainerId).name}`, `croc_room_${App.roomCode}`);
     }
 
     function endRound(reason, winnerId, topicRoom) {
@@ -725,31 +748,29 @@
         winner.score += pts;
         explainer.score += 50;
         
-        sysText = `🎉 ${winner.name} угадал слово «${App._secretWord}»! +${pts} очков. Ведущий +50.`;
-        
-        App.client.publish(topicRoom, JSON.stringify({ type: 'round_end', word: App._secretWord, winner: winner.name, scores: [...App.players.values()] }));
+        sysText = `🎉 ${winner.name} угадал слово «${App._secretWord}»! +${pts} очков.`;
+        publish(topicRoom, { type: 'round_end', word: App._secretWord, winner: winner.name, scores: [...App.players.values()] });
         revealWordUI(App._secretWord);
-        fireConfetti();
       } else {
         sysText = `⏰ Время вышло! Слово было: «${App._secretWord}».`;
-        App.client.publish(topicRoom, JSON.stringify({ type: 'round_end', word: App._secretWord, winner: null, scores: [...App.players.values()] }));
+        publish(topicRoom, { type: 'round_end', word: App._secretWord, winner: null, scores: [...App.players.values()] });
         revealWordUI(App._secretWord);
       }
 
       addSystemMsg(sysText, topicRoom);
       
       App.round.number++;
-      broadcastState(topicRoom);
+      broadcastState();
 
       setTimeout(() => {
-        if (App.isHost) startRound(topicRoom, `${topicRoom}/p_${App.myId}`);
+        if (App.isHost) startRound();
       }, 5000);
     }
 
     // ============================================================
     // ЛОГИКА КЛИЕНТА
     // ============================================================
-    function handleClientReceive(data) {
+    function handleClientData(data) {
       switch(data.type) {
         case 'state':
           App.players.clear();
@@ -757,27 +778,24 @@
           App.settings = data.settings;
           App.round = data.round;
           
-          renderState(data);
+          updateLobbyUI();
+          updateGameUI(data);
           
-          if (!$('#screen-game').classList.contains('hidden') || $('#chatMessages').children.length > 0) {
-             $('#screen-lobby').classList.add('hidden');
-             $('#screen-game').classList.remove('hidden');
+          if (!$('#gameScreen').classList.contains('hidden') || $('#chatHistory').children.length > 0) {
+             $('#lobbyScreen').classList.add('hidden');
+             $('#gameScreen').classList.remove('hidden');
           }
           break;
-          
-        case 'secret_word':
-          $('#screen-lobby').classList.add('hidden');
-          $('#screen-game').classList.remove('hidden');
+        case 'secret':
+          $('#lobbyScreen').classList.add('hidden');
+          $('#gameScreen').classList.remove('hidden');
           showWordUI(data.word);
           break;
-          
         case 'chat':
-          appendChatMsg(data);
+          appendMessage(data);
           break;
-          
         case 'round_end':
           revealWordUI(data.word);
-          if (data.winner === App.myName) fireConfetti();
           data.scores.forEach(s => {
             const p = App.players.get(s.id);
             if (p) p.score = s.score;
@@ -787,87 +805,70 @@
     }
 
     // ============================================================
-    // РЕНДЕР (UI)
+    // ОБНОВЛЕНИЕ UI
     // ============================================================
-    function renderState(state) {
-      updateLobbyList();
+    function updateLobbyUI() {
+      const list = $('#playerList');
+      if (!list) return;
+      list.innerHTML = '';
       
+      App.players.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'player-card';
+        card.innerHTML = `
+          ${p.isHost ? '<div class="host-badge">ХОСТ</div>' : ''}
+          <img src="${p.avatar}">
+          <div class="name">${p.name}</div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    function updateGameUI(state) {
       const isExplainer = state.round.explainerId === App.myId;
       
-      $('#roundLabel').textContent = `Раунд ${state.round.number}`;
+      $('#roundDisplay').textContent = `Раунд ${state.round.number}`;
       
       if (isExplainer) {
-        $('#roleBadge').textContent = 'Вы Ведущий';
-        $('#roleBadge').className = 'role-badge explainer';
-        $('#wordLabel').textContent = 'Ваше секретное слово';
-        $('#gameHint').innerHTML = 'Пишите намеки в чат. <strong>Нельзя использовать однокоренные слова!</strong>';
+        $('#roleTag').textContent = 'ВЫ ВЕДУЩИЙ';
+        $('#roleTag').className = 'role-tag explainer';
+        $('#wordLabel').textContent = 'ВАШЕ СЕКРЕТНОЕ СЛОВО';
+        $('#wordHint').innerHTML = 'Пишите намеки в чат. <br><b>Нельзя использовать однокоренные слова!</b>';
       } else {
-        $('#roleBadge').textContent = 'Вы Отгадываете';
-        $('#roleBadge').className = 'role-badge guesser';
-        $('#wordLabel').textContent = 'Загаданное слово';
-        $('#gameHint').innerHTML = 'Читайте намеки ведущего и пишите догадки в чат.';
+        $('#roleTag').textContent = 'ВЫ ОТГАДЫВАЕТЕ';
+        $('#roleTag').className = 'role-tag guesser';
+        $('#wordLabel').textContent = 'ЗАГАДАННОЕ СЛОВО';
+        $('#wordHint').innerHTML = 'Читайте намеки ведущего и пишите догадки в чат.';
         
-        if (state.round.isActive && !$('#wordContainer').querySelector('.secret-word-display')) {
+        if (state.round.isActive && !$('#wordDisplay').querySelector('.secret-word')) {
            renderEmptyBoxes(state.round.wordLength);
         }
       }
 
-      // Локальный таймер клиента
       if (state.round.isActive) {
         clearInterval(App._clientTimer);
         App._clientTimer = setInterval(() => {
-          const timeLeft = Math.max(0, Math.floor((state.round.endTime - Date.now()) / 1000));
-          updateTimerUI(timeLeft);
-          if (timeLeft <= 0) clearInterval(App._clientTimer);
+          const left = Math.max(0, Math.floor((state.round.endTime - Date.now()) / 1000));
+          const timerEl = $('#timerDisplay');
+          timerEl.textContent = left;
+          timerEl.classList.toggle('warning', left <= 10);
+          if (left <= 0) clearInterval(App._clientTimer);
         }, 200);
       } else {
         clearInterval(App._clientTimer);
-        updateTimerUI(0);
+        $('#timerDisplay').textContent = '0';
       }
     }
 
-    function updateLobbyList() {
-      const list = $('#playerList');
-      if (!list) return;
-      list.innerHTML = '';
-      $('#playerCount').textContent = `(${App.players.size}/${App.settings.maxPlayers})`;
-      
-      App.players.forEach(p => {
-        const el = document.createElement('div');
-        el.className = 'player-chip';
-        
-        const av = document.createElement('div');
-        av.className = 'avatar';
-        av.innerHTML = `<img src="${p.avatar}">`;
-        
-        const name = document.createElement('span');
-        name.className = 'name';
-        name.textContent = p.name;
-        
-        const badges = document.createElement('div');
-        if (p.isHost) {
-          const b = document.createElement('span'); b.className = 'badge host'; b.textContent = 'Хост';
-          badges.appendChild(b);
-        }
-        if (p.id === App.myId) {
-          const b = document.createElement('span'); b.className = 'badge me'; b.textContent = 'Вы';
-          badges.appendChild(b);
-        }
-        
-        el.append(av, name, badges);
-        list.appendChild(el);
-      });
-    }
-
     function showWordUI(word) {
-      const c = $('#wordContainer');
-      if (c) c.innerHTML = `<div class="secret-word-display">${word}</div>`;
+      const el = $('#wordDisplay');
+      if (el) el.innerHTML = `<div class="secret-word">${word}</div>`;
     }
 
     function renderEmptyBoxes(len) {
-      const c = $('#wordContainer');
-      if (!c) return;
-      c.innerHTML = '';
+      const el = $('#wordDisplay');
+      if (!el) return;
+      el.innerHTML = '';
       const container = document.createElement('div');
       container.className = 'letter-boxes';
       for (let i = 0; i < len; i++) {
@@ -875,13 +876,13 @@
         box.className = 'letter-box';
         container.appendChild(box);
       }
-      c.appendChild(container);
+      el.appendChild(container);
     }
 
     function revealWordUI(word) {
-      const c = $('#wordContainer');
-      if (!c) return;
-      c.innerHTML = '';
+      const el = $('#wordDisplay');
+      if (!el) return;
+      el.innerHTML = '';
       const container = document.createElement('div');
       container.className = 'letter-boxes';
       
@@ -892,41 +893,27 @@
         box.style.animationDelay = `${i * 0.05}s`;
         container.appendChild(box);
       });
-      c.appendChild(container);
+      el.appendChild(container);
     }
 
-    function updateTimerUI(time) {
-      const t = $('#timerDisplay');
-      if (!t) return;
-      t.textContent = time;
-      if (time <= 10) t.classList.add('warning');
-      else t.classList.remove('warning');
-    }
-
-    function appendChatMsg(msg) {
-      const c = $('#chatMessages');
+    function appendMessage(msg) {
+      const c = $('#chatHistory');
       if (!c) return;
       const el = document.createElement('div');
-      el.className = 'msg';
+      el.className = 'message';
 
       if (msg.type === 'system') {
         el.classList.add('system');
         el.textContent = msg.text;
       } else {
-        if (msg.id === App.myId) el.classList.add('self');
+        if (msg.id === App.myId) el.classList.add('mine');
+        else el.classList.add('others');
         if (msg.isHint) el.classList.add('hint');
         
         const author = document.createElement('div');
         author.className = 'msg-author';
         author.textContent = msg.name;
         el.appendChild(author);
-        
-        if (msg.isHint) {
-          const tag = document.createElement('span');
-          tag.className = 'msg-tag';
-          tag.textContent = 'Намек ведущего';
-          el.appendChild(tag);
-        }
         
         const text = document.createElement('div');
         text.textContent = msg.text;
@@ -938,153 +925,15 @@
     }
 
     function addSystemMsg(text, topicRoom) {
-      const payload = { type: 'system', text: text };
-      if (App.isHost) App.client.publish(topicRoom, JSON.stringify(payload));
-      appendChatMsg(payload);
+      const payload = { type: 'system', text };
+      if (App.isHost) publish(topicRoom, payload);
+      appendMessage(payload);
     }
 
     // ============================================================
-    // ИНИЦИАЛИЗАЦИЯ
+    // СТАРТ
     // ============================================================
-    document.addEventListener('DOMContentLoaded', () => {
-      // 1. Тема
-      const savedTheme = localStorage.getItem('croc_theme') || 'dark';
-      document.body.dataset.theme = savedTheme;
-      const themeBtn = $('#themeBtn');
-      themeBtn.textContent = savedTheme === 'dark' ? '☀' : '◐';
-
-      themeBtn.addEventListener('click', () => {
-        const next = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
-        document.body.dataset.theme = next;
-        localStorage.setItem('croc_theme', next);
-        themeBtn.textContent = next === 'dark' ? '☀' : '◐';
-      });
-
-      // 2. Правила
-      const rulesBtn = $('#rulesBtn');
-      const rulesModal = $('#rulesModal');
-      rulesBtn.addEventListener('click', () => rulesModal.classList.add('active'));
-      $('#closeRulesBtn').addEventListener('click', () => rulesModal.classList.remove('active'));
-      rulesModal.addEventListener('click', (e) => {
-        if (e.target.id === 'rulesModal') rulesModal.classList.remove('active');
-      });
-
-      // 3. Профиль
-      const nickInput = $('#nicknameInput');
-      nickInput.value = 'Игрок' + Math.floor(100 + Math.random() * 900);
-      const updateAv = () => {
-        const av = $('#avatarPreview');
-        av.innerHTML = `<img src="${getAvatarUrl(nickInput.value)}">`;
-      };
-      nickInput.addEventListener('input', updateAv);
-      updateAv();
-
-      // 4. Настройки
-      $('#maxPlayersSeg').addEventListener('click', e => {
-        if (e.target.tagName !== 'BUTTON') return;
-        $$('#maxPlayersSeg button').forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
-        App.settings.maxPlayers = parseInt(e.target.dataset.val);
-      });
-
-      $('#roundTimeSeg').addEventListener('click', e => {
-        if (e.target.tagName !== 'BUTTON') return;
-        $$('#roundTimeSeg button').forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
-        App.settings.roundTime = parseInt(e.target.dataset.val);
-      });
-
-      $('#categorySelect').addEventListener('change', e => {
-        App.settings.category = e.target.value;
-      });
-
-      // 5. Создание / Вход
-      $('#createRoomBtn').addEventListener('click', () => {
-        const name = nickInput.value.trim();
-        if (!name) return toast('Введите имя', 'error');
-        
-        const roomCode = 'CROC-' + Math.floor(1000 + Math.random() * 9000);
-        initNetwork(roomCode, true, name);
-      });
-
-      $('#joinRoomBtn').addEventListener('click', () => {
-        const name = nickInput.value.trim();
-        let code = $('#joinCodeInput').value.trim().toUpperCase();
-        if (!name) return toast('Введите имя', 'error');
-        if (!code) return toast('Введите код', 'error');
-        if (!code.startsWith('CROC-')) code = 'CROC-' + code;
-        
-        initNetwork(code, false, name);
-      });
-
-      // 6. Кнопки в комнате
-      $('#copyInviteBtn').addEventListener('click', () => {
-        const url = `${location.origin}${location.pathname}?room=${App.roomCode}`;
-        navigator.clipboard.writeText(url).then(() => toast('Ссылка скопирована!', 'success'));
-      });
-
-      const leaveRoom = () => {
-        if (App.client) App.client.end();
-        location.reload();
-      };
-      
-      $('#leaveRoomBtn').addEventListener('click', leaveRoom);
-      $('#leaveGameBtn').addEventListener('click', leaveRoom);
-
-      $('#startGameBtn').addEventListener('click', () => {
-        const topicRoom = `croc_game_v9_${App.roomCode}`;
-        startGame(topicRoom, `${topicRoom}/p_${App.myId}`);
-      });
-
-      // 7. Чат
-      const sendChat = () => {
-        const input = $('#chatInput');
-        const text = input.value.trim();
-        if (!text) return;
-        
-        if (!App.isHost) {
-          const topicRoom = `croc_game_v9_${App.roomCode}`;
-          App.client.publish(topicRoom, JSON.stringify({ type: 'chat', id: App.myId, name: App.myName, text: text }));
-          appendChatMsg({ id: App.myId, name: App.myName, text: text, isHint: false });
-        } else {
-          // Если хост пишет, он обрабатывает сам
-          handleHostReceive({ type: 'chat', id: App.myId, text: text }, `croc_game_v9_${App.roomCode}`);
-        }
-        
-        input.value = '';
-      };
-
-      $('#sendBtn').addEventListener('click', sendChat);
-      $('#chatInput').addEventListener('keydown', e => {
-        if (e.key === 'Enter') sendChat();
-      });
-
-      // 8. Мобильная клавиатура
-      if (window.visualViewport) {
-        const vv = window.visualViewport;
-        vv.addEventListener('resize', () => {
-          const isKeyboardOpen = window.innerHeight - vv.height > 100;
-          const inputArea = $('.chat-input-area');
-          const chatMessages = $('#chatMessages');
-          if (inputArea && chatMessages) {
-            if (isKeyboardOpen) {
-              inputArea.style.transform = `translateY(-${window.innerHeight - vv.height - vv.offsetTop}px)`;
-              chatMessages.style.paddingBottom = (window.innerHeight - vv.height) + 'px';
-            } else {
-              inputArea.style.transform = 'none';
-              chatMessages.style.paddingBottom = '20px';
-            }
-          }
-        });
-      }
-
-      // 9. Проверка URL на ?room=
-      const params = new URLSearchParams(location.search);
-      if (params.get('room')) {
-        $('#joinCodeInput').value = params.get('room').toUpperCase();
-        toast('Код комнаты подставлен!');
-      }
-    });
+    document.addEventListener('DOMContentLoaded', initUI);
 
   </script>
 </body>
